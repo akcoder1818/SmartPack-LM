@@ -193,6 +193,14 @@ def generate_pdf_report(inspection_data, output_path=None, lang="en"):
 
     ref_str = f"SP-LM-2026-{insp_id:04d}" if isinstance(insp_id, int) else f"SP-LM-{insp_id}"
 
+    loc_data = inspection_data.get("location_data")
+    if isinstance(loc_data, str):
+        try:
+            import json as pyjson
+            loc_data = pyjson.loads(loc_data)
+        except Exception:
+            loc_data = None
+
     meta_table_data = [
         [
             Paragraph(f"<b>{t('th_id', lang=lang)}:</b> {ref_str}", cell_style),
@@ -207,6 +215,24 @@ def generate_pdf_report(inspection_data, output_path=None, lang="en"):
             Paragraph(f"<b>{t('th_status', lang=lang)}:</b> <b>{status_translated}</b>", cell_bold)
         ]
     ]
+
+    if loc_data and isinstance(loc_data, dict) and loc_data.get("latitude") is not None:
+        lat = loc_data.get("latitude")
+        lon = loc_data.get("longitude")
+        addr = loc_data.get("address") or f"{lat:.5f}, {lon:.5f}"
+        loc_time = loc_data.get("timestamp") or timestamp
+        meta_table_data.append([
+            Paragraph(f"<b>Inspection Location:</b> {lat:.5f}, {lon:.5f} ({loc_time})", cell_style),
+            Paragraph(f"<b>Address:</b> {addr[:55]}", cell_style)
+        ])
+
+    insp_name = inspection_data.get("inspector_name")
+    insp_badge = inspection_data.get("inspector_badge")
+    if insp_name:
+        meta_table_data.append([
+            Paragraph(f"<b>Enforcement Officer:</b> {insp_name}", cell_style),
+            Paragraph(f"<b>Badge / Station ID:</b> {insp_badge or 'OFFICER'}", cell_style)
+        ])
 
     meta_table = Table(meta_table_data, colWidths=[260, 260])
     meta_table.setStyle(TableStyle([

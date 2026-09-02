@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Inspectors | SmartPack-LM Legal Metrology Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-warning text-dark fw-bold">Admin Console</span>
+                <span class="text-muted small">Field Enforcement Roster</span>
+            </div>
+            <h2 class="fw-bold text-navy mb-0">Legal Metrology Inspector Management</h2>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-navy d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#createInspectorModal">
+                <i class="bi bi-person-plus-fill text-warning"></i>
+                <span class="fw-semibold">Add New Inspector</span>
+            </button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary d-flex align-items-center gap-1">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Feedback messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show small mb-4" role="alert">
+                    <i class="bi bi-info-circle-fill me-1"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Filter & Search Toolbar -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-3">
+            <form method="GET" action="{{ url_for('manage_inspectors') }}" class="row g-2 align-items-center">
+                <div class="col-md-5">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Search by name, username, badge ID or department..." value="{{ search_query or '' }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="ALL" {% if status_filter == 'ALL' or not status_filter %}selected{% endif %}>All Statuses (Active &amp; Inactive)</option>
+                        <option value="ACTIVE" {% if status_filter == 'ACTIVE' %}selected{% endif %}>Active Only</option>
+                        <option value="INACTIVE" {% if status_filter == 'INACTIVE' %}selected{% endif %}>Inactive Only</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex gap-2 justify-content-md-end">
+                    <button type="submit" class="btn btn-sm btn-navy px-3">Filter</button>
+                    {% if search_query or (status_filter and status_filter != 'ALL') %}
+                        <a href="{{ url_for('manage_inspectors') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Inspectors Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
+                <i class="bi bi-people-fill text-primary"></i>
+                Authorized Field Inspectors ({{ inspectors|length }})
+            </h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-uppercase">
+                        <tr>
+                            <th class="ps-3">Inspector / Badge</th>
+                            <th>Username / Email</th>
+                            <th>Department &amp; Phone</th>
+                            <th class="text-center">Total Scans</th>
+                            <th class="text-center">Compliance</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if inspectors %}
+                            {% for insp in inspectors %}
+                            <tr>
+                                <td class="ps-3">
+                                    <div class="fw-bold text-dark">{{ insp.name }}</div>
+                                    <span class="badge bg-navy-subtle text-navy font-monospace">{{ insp.inspector_id }}</span>
+                                </td>
+                                <td>
+                                    <div class="font-monospace small text-dark">{{ insp.username }}</div>
+                                    <small class="text-muted">{{ insp.email or "—" }}</small>
+                                </td>
+                                <td>
+                                    <div class="small text-dark">{{ insp.department or "Legal Metrology Enforcement" }}</div>
+                                    <small class="text-muted"><i class="bi bi-telephone me-1"></i>{{ insp.phone or "—" }}</small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border px-2 py-1 fs-6 font-monospace">{{ insp.total_scans }}</span>
+                                </td>
+                                <td class="text-center">
+                                    {% if insp.total_scans > 0 %}
+                                        {% set pass_rate = (insp.compliant_scans / insp.total_scans * 100)|round(1) %}
+                                        <span class="badge {% if pass_rate >= 80 %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning-emphasis{% endif %} border px-2 py-1">
+                                            {{ pass_rate }}% Pass
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted small">No scans yet</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if insp.status == 'ACTIVE' %}
+                                        <span class="badge bg-success px-2.5 py-1.5"><i class="bi bi-check-circle me-1"></i>Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary px-2.5 py-1.5"><i class="bi bi-pause-circle me-1"></i>Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-3 text-nowrap">
+                                    <!-- View Inspections -->
+                                    <a href="{{ url_for('inspection_history', inspector_id=insp.id) }}" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill me-1" title="View Inspections">
+                                        <i class="bi bi-list-check"></i> Scans
+                                    </a>
+                                    <!-- Toggle Status -->
+                                    <form method="POST" action="{{ url_for('toggle_inspector_status', user_id=insp.id) }}" class="d-inline">
+                                        <input type="hidden" name="status" value="{% if insp.status == 'ACTIVE' %}INACTIVE{% else %}ACTIVE{% endif %}">
+                                        <button type="submit" class="btn btn-sm {% if insp.status == 'ACTIVE' %}btn-outline-warning text-dark{% else %}btn-outline-success{% endif %} py-0 px-2 rounded-pill me-1" onclick="return confirm('Change status of {{ insp.name }} to {% if insp.status == 'ACTIVE' %}INACTIVE{% else %}ACTIVE{% endif %}?')">
+                                            {% if insp.status == 'ACTIVE' %}Deactivate{% else %}Activate{% endif %}
+                                        </button>
+                                    </form>
+                                    <!-- Reset Password Modal Trigger -->
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" data-bs-toggle="modal" data-bs-target="#resetPwdModal{{ insp.id }}" title="Reset Password">
+                                        <i class="bi bi-key"></i> Key
+                                    </button>
+
+                                    <!-- Reset Password Modal -->
+                                    <div class="modal fade text-start" id="resetPwdModal{{ insp.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h6 class="modal-title fw-bold"><i class="bi bi-key-fill text-warning me-1"></i> Reset Password: {{ insp.name }}</h6>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form method="POST" action="{{ url_for('reset_inspector_password_route', user_id=insp.id) }}">
+                                                    <div class="modal-body">
+                                                        <p class="small text-muted mb-3">Enter a new secure password for <strong>{{ insp.username }}</strong>. The new password will be hashed using SHA-256 PBKDF2 immediately.</p>
+                                                        <div class="mb-3">
+                                                            <label class="form-label small fw-semibold">New Password</label>
+                                                            <input type="password" name="new_password" class="form-control" required minlength="6" placeholder="Enter at least 6 characters">
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-sm btn-primary">Update Password</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="bi bi-people fs-1 text-muted d-block mb-2"></i>
+                                    No inspectors found matching your query.
+                                    <div class="mt-2">
+                                        <button class="btn btn-sm btn-navy" data-bs-toggle="modal" data-bs-target="#createInspectorModal">Create First Inspector</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Create New Inspector -->
+<div class="modal fade" id="createInspectorModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-navy text-white">
+                <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill text-warning me-2"></i>Provision New Legal Metrology Inspector</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('create_inspector_route') }}">
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-dark">Inspector Official Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" placeholder="e.g. Ramesh Kumar" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-dark">Inspector Badge / ID <span class="text-danger">*</span></label>
+                            <input type="text" name="inspector_id" class="form-control font-monospace" placeholder="e.g. LMI-DL-2026-042" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-dark">Username (Login ID) <span class="text-danger">*</span></label>
+                            <input type="text" name="username" class="form-control font-monospace" placeholder="e.g. ramesh.kumar" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-dark">Initial Password <span class="text-danger">*</span></label>
+                            <input type="password" name="password" class="form-control" placeholder="••••••••••••" required minlength="6">
+                            <small class="text-muted">Will be hashed securely with PBKDF2</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-dark">Official Email (Optional)</label>
+                            <input type="email" name="email" class="form-control" placeholder="officer@nic.in">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-dark">Phone Number (Optional)</label>
+                            <input type="text" name="phone" class="form-control" placeholder="+91 9876543210">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small text-dark">Department / Enforcement Zone</label>
+                            <input type="text" name="department" class="form-control" placeholder="e.g. Delhi West Zone, Packaged Commodities Wing" value="Legal Metrology Enforcement Wing">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-navy px-4 fw-bold">Provision Inspector Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

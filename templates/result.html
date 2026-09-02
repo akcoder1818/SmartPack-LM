@@ -14,9 +14,25 @@
                         <span class="text-muted small"><i class="bi bi-clock-history me-1"></i>{{ inspection.timestamp }}</span>
                     </div>
                     <h3 class="fw-bold mb-0 text-dark">{{ inspection.product_name }}</h3>
-                    <div class="text-muted small">
-                        <i class="bi bi-building me-1"></i>{{ inspection.manufacturer }}
+                    <div class="text-muted small d-flex align-items-center gap-2 flex-wrap">
+                        <span><i class="bi bi-building me-1"></i>{{ inspection.manufacturer }}</span>
+                        {% if inspection.inspector_name %}
+                        <span>&bull;</span>
+                        <span class="text-navy fw-semibold"><i class="bi bi-person-badge-fill me-1 text-warning"></i>Inspector: {{ inspection.inspector_name }} ({{ inspection.inspector_badge }})</span>
+                        {% endif %}
                     </div>
+                    {% if inspection.location_data and inspection.location_data.latitude %}
+                    <div class="mt-2 d-flex flex-wrap align-items-center gap-2 small">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                            <i class="bi bi-geo-alt-fill me-1"></i>{{ inspection.location_data.latitude|round(4) }}, {{ inspection.location_data.longitude|round(4) }}
+                        </span>
+                        {% if inspection.location_data.address %}
+                        <span class="text-muted text-truncate" style="max-width: 480px;" title="{{ inspection.location_data.address }}">
+                            <i class="bi bi-pin-map me-1"></i>{{ inspection.location_data.address }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                 </div>
 
                 <!-- Status & Score Badges -->
@@ -254,6 +270,36 @@
                 </div>
             </div>
 
+            {% if inspection.location_data and inspection.location_data.latitude %}
+            <!-- Inspection Location Map Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
+                        <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
+                        Inspection Geolocation &amp; Market Site
+                    </h6>
+                    <span class="badge bg-light text-dark border font-monospace">{{ inspection.location_data.latitude|round(5) }}, {{ inspection.location_data.longitude|round(5) }}</span>
+                </div>
+                <div class="card-body p-3">
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <small class="text-muted d-block"><i class="bi bi-signpost-2 me-1"></i>Postal Address:</small>
+                            <span class="fw-semibold text-dark">{{ inspection.location_data.address or "Address not resolved" }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <small class="text-muted d-block"><i class="bi bi-compass me-1"></i>GPS Accuracy:</small>
+                            <span class="fw-semibold text-dark">{% if inspection.location_data.accuracy %}&plusmn;{{ inspection.location_data.accuracy|round(1) }} meters{% else %}Standard{% endif %}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <small class="text-muted d-block"><i class="bi bi-clock-history me-1"></i>Fix Time:</small>
+                            <span class="fw-semibold text-dark">{{ inspection.location_data.timestamp or inspection.timestamp }}</span>
+                        </div>
+                    </div>
+                    <div id="resultLocationMap" class="rounded-3 border w-100 shadow-xs" style="height: 200px;"></div>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Mandatory Legal Notice -->
             <div class="p-3 rounded-3 bg-light border d-flex gap-2 align-items-center">
                 <i class="bi bi-shield-exclamation text-secondary fs-4"></i>
@@ -282,4 +328,26 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if inspection.location_data and inspection.location_data.latitude %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const lat = {{ inspection.location_data.latitude }};
+    const lon = {{ inspection.location_data.longitude }};
+    const mapEl = document.getElementById('resultLocationMap');
+    if (mapEl && typeof L !== 'undefined') {
+        const map = L.map('resultLocationMap').setView([lat, lon], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        const marker = L.marker([lat, lon]).addTo(map);
+        marker.bindPopup("<b>Inspection Site</b><br>{{ inspection.product_name|escape }}<br>{{ (inspection.location_data.address or '')|escape }}").openPopup();
+        setTimeout(function() { map.invalidateSize(); }, 300);
+    }
+});
+</script>
+{% endif %}
 {% endblock %}

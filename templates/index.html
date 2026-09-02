@@ -89,7 +89,7 @@
                                     <small class="text-muted">{{ t('front_label_hint') }}</small>
                                 </label>
                                 <div class="dropzone-box text-center p-4 rounded-3 border-2 border-dashed position-relative" id="frontDropzone">
-                                    <input type="file" name="front_image" id="frontImageInput" class="dropzone-input" accept="image/png, image/jpeg, image/jpg, image/webp, image/bmp" required>
+                                    <input type="file" name="front_image" id="frontImageInput" class="dropzone-input" accept="image/png, image/jpeg, image/jpg, image/webp, image/bmp" capture="environment" required>
                                     <div class="dropzone-content" id="frontDropzoneContent">
                                         <i class="bi bi-cloud-arrow-up-fill fs-1 text-primary opacity-75 mb-2 d-block"></i>
                                         <div class="fw-semibold text-dark mb-1">{{ t('front_dropzone_prompt') }}</div>
@@ -124,7 +124,7 @@
                                     <small class="text-muted">{{ t('back_label_hint') }}</small>
                                 </label>
                                 <div class="dropzone-box text-center p-4 rounded-3 border-2 border-dashed position-relative" id="backDropzone">
-                                    <input type="file" name="back_image" id="backImageInput" class="dropzone-input" accept="image/png, image/jpeg, image/jpg, image/webp, image/bmp">
+                                    <input type="file" name="back_image" id="backImageInput" class="dropzone-input" accept="image/png, image/jpeg, image/jpg, image/webp, image/bmp" capture="environment">
                                     <div class="dropzone-content" id="backDropzoneContent">
                                         <i class="bi bi-file-earmark-image-fill fs-1 text-secondary opacity-75 mb-2 d-block"></i>
                                         <div class="fw-semibold text-dark mb-1">{{ t('back_dropzone_prompt') }}</div>
@@ -159,6 +159,66 @@
                                 <i class="bi bi-pencil-square me-1"></i> {{ t('officer_notes_label') }}
                             </label>
                             <input type="text" name="officer_notes" class="form-control form-control-sm" placeholder="{{ t('officer_notes_placeholder') }}">
+                        </div>
+
+                        <!-- Inspection Location / GPS Section -->
+                        <div class="card border rounded-3 p-3 mb-4 bg-light shadow-xs" id="locationSection">
+                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-2">
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-navy d-flex align-items-center gap-2">
+                                        <i class="bi bi-geo-alt-fill text-danger"></i>
+                                        <span>{{ t('location_section_title') or 'Inspection Location' }}</span>
+                                        <span class="badge bg-secondary-subtle text-secondary small fw-normal">GPS</span>
+                                    </h6>
+                                    <small class="text-muted">{{ t('location_section_hint') or 'Optionally tag this inspection with GPS coordinates and market location' }}</small>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold d-flex align-items-center gap-1 shadow-xs" id="detectLocationBtn">
+                                        <i class="bi bi-crosshair"></i>
+                                        <span id="detectLocationBtnText">{{ t('detect_location_btn') or '📍 Detect My Location' }}</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2 d-none shadow-xs" id="refreshLocationBtn" title="{{ t('refresh_location_btn') or 'Refresh Location' }}">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Status / Feedback Message -->
+                            <div class="alert alert-info py-2 px-3 small d-none mb-2" id="locationStatusAlert" role="alert">
+                                <span id="locationStatusText"></span>
+                            </div>
+
+                            <!-- Location Details Display & Map Container (Initially Hidden) -->
+                            <div id="locationDetailsContainer" class="d-none">
+                                <div class="row g-2 mb-2">
+                                    <div class="col-sm-6">
+                                        <div class="p-2 rounded-2 bg-white border small">
+                                            <div class="text-muted small"><i class="bi bi-compass me-1"></i>Coordinates &amp; Accuracy:</div>
+                                            <div class="fw-bold text-dark font-monospace" id="locCoordsDisplay">--</div>
+                                            <div class="text-muted small" id="locAccuracyDisplay">--</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="p-2 rounded-2 bg-white border small">
+                                            <div class="text-muted small"><i class="bi bi-building me-1"></i>Locality &amp; Administrative Region:</div>
+                                            <div class="fw-bold text-dark text-truncate" id="locRegionDisplay">--</div>
+                                            <div class="text-muted small text-truncate" id="locPostcodeDisplay">--</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="p-2 rounded-2 bg-white border small">
+                                            <div class="text-muted small"><i class="bi bi-signpost-2 me-1"></i>Full Postal Address:</div>
+                                            <div class="text-dark fw-semibold" id="locAddressDisplay">--</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Leaflet Map Box -->
+                                <div id="inspectionMap" class="rounded-3 border w-100 shadow-xs" style="height: 220px; z-index: 1;"></div>
+                            </div>
+
+                            <!-- Hidden Form Input to submit location payload -->
+                            <input type="hidden" name="location_data" id="locationDataInput" value="">
                         </div>
 
                         <!-- Submit Button -->

@@ -15,8 +15,11 @@ from flask import (
 
 from utils.database import (
     init_db, save_inspection, get_inspection,
-    list_inspections, get_dashboard_metrics, delete_inspection
+    list_inspections, get_dashboard_metrics, delete_inspection,
+    authenticate_user, create_user, list_inspectors,
+    update_user_status, reset_user_password, get_user_by_id
 )
+from utils.auth import get_current_user, login_required, admin_required
 from utils.ocr import run_ocr_pipeline
 from utils.extractor import extract_all_fields
 from utils.compliance import assess_compliance, load_rules
@@ -73,12 +76,15 @@ def inject_localization():
     def badge_helper(badge_str):
         return get_translated_badge(badge_str, lang=current_lang)
 
+    user = get_current_user()
+
     return {
         't': translate_helper,
         'current_lang': current_lang,
         'supported_languages': get_supported_languages(),
         'get_translated_status': status_helper,
-        'get_translated_badge': badge_helper
+        'get_translated_badge': badge_helper,
+        'current_user': user
     }
 
 def allowed_file(filename):
@@ -199,8 +205,21 @@ def analyze():
             "back": back_path
         },
         "evidence_image_path": evidence_path,
-        "officer_notes": officer_notes
+        "officer_notes": officer_notes,
+        "location_data": None,
+        "inspector_id": session.get('user_id')
     }
+
+    # Safely parse inspection location data if provided
+    raw_location = request.form.get('location_data')
+    if raw_location:
+        try:
+            import json as pyjson
+            parsed_loc = pyjson.loads(raw_location)
+            if isinstance(parsed_loc, dict) and parsed_loc.get('latitude') is not None:
+                inspection_payload["location_data"] = parsed_loc
+        except Exception as e:
+            print(f"[SmartPack-LM] Note: could not parse location payload: {e}")
 
     inspection_id = save_inspection(inspection_payload)
     return redirect(url_for('view_result', inspection_id=inspection_id))
@@ -237,23 +256,81 @@ def download_report(inspection_id):
         mimetype='application/pdf'
     )
 
+# ==============================================================================
+# AUTHENTICATION ROUTES (PART 1 & PART 2)
+# ==============================================================================
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Admin and Inspector Authentication Portal."""
+    if session.get('user_id') and get_current_user():
+        return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+
+        if not username or not password:
+            flash("Please enter both username/email and password.", "warning")
+            return render_template('login.html')
+
+        user = authenticate_user(username, password)
+        if not user:
+            flash("Invalid credentials or account is deactivated. Contact Administrator.", "danger")
+            return render_template('login.html')
+
+        # Store user details in session
+        session['user_id'] = user['id']
+        session['username'] = user['username']
+        session['role'] = user['role']
+        session['name'] = user['name']
+
+        flash(f"Welcome back, {user['name']} ({user['role']}). Secure session active.", "success")
+        next_page = request.args.get('next')
+        if next_page and next_page.startswith('/'):
+            return redirect(next_page)
+        return redirect(url_for('dashboard'))
+
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    """Clears authenticated session and redirects to login."""
+    session.pop('user_id', None)
+    session.pop('username', None)
+    session.pop('role', None)
+    session.pop('name', None)
+    flash("You have been signed out successfully.", "info")
+    return redirect(url_for('login'))
+
+# ==============================================================================
+# DASHBOARD & INSPECTION HISTORY (PARTS 3, 4, 5, 6)
+# ==============================================================================
+
 @app.route('/dashboard')
 def dashboard():
     """GovTech Compliance Analytics Dashboard & Audit Trail."""
+    current_user = get_current_user()
+    inspector_id = None
+    if current_user and current_user['role'] == 'INSPECTOR':
+        # Inspector sees only their own inspections on the dashboard
+        inspector_id = current_user['id']
+
     search_query = request.args.get('search', '').strip()
     status_filter = request.args.get('status', 'ALL').strip()
     page = int(request.args.get('page', 1))
-    per_page = 25
+    per_page = 15
     offset = (page - 1) * per_page
 
     inspections, total_count = list_inspections(
         search=search_query if search_query else None,
         status=status_filter if status_filter != 'ALL' else None,
+        inspector_id=inspector_id,
         limit=per_page,
         offset=offset
     )
 
-    metrics = get_dashboard_metrics()
+    metrics = get_dashboard_metrics(inspector_id=inspector_id)
 
     return render_template(
         'dashboard.html',
@@ -264,6 +341,144 @@ def dashboard():
         status_filter=status_filter,
         page=page
     )
+
+@app.route('/inspections')
+@app.route('/history')
+def inspection_history():
+    """Dedicated Searchable & Filterable Inspection Audit Log."""
+    current_user = get_current_user()
+    search_query = request.args.get('search', '').strip()
+    status_filter = request.args.get('status', 'ALL').strip()
+    date_from = request.args.get('date_from', '').strip()
+    date_to = request.args.get('date_to', '').strip()
+    page = int(request.args.get('page', 1))
+    per_page = 20
+    offset = (page - 1) * per_page
+
+    # Inspector filter: if admin, allow querying by specific inspector; if inspector, restrict to self
+    inspectors_list = []
+    if current_user and current_user['role'] == 'ADMIN':
+        inspectors_list = list_inspectors()
+        raw_inspector_param = request.args.get('inspector_id', '').strip()
+        inspector_filter = int(raw_inspector_param) if raw_inspector_param.isdigit() else None
+    elif current_user and current_user['role'] == 'INSPECTOR':
+        inspector_filter = current_user['id']
+    else:
+        inspector_filter = None
+
+    inspections, total_count = list_inspections(
+        search=search_query if search_query else None,
+        status=status_filter if status_filter != 'ALL' else None,
+        inspector_id=inspector_filter,
+        date_from=date_from if date_from else None,
+        date_to=date_to if date_to else None,
+        limit=per_page,
+        offset=offset
+    )
+
+    total_pages = (total_count + per_page - 1) // per_page if total_count > 0 else 1
+
+    return render_template(
+        'inspections.html',
+        inspections=inspections,
+        total_count=total_count,
+        search_query=search_query,
+        status_filter=status_filter,
+        inspector_filter=request.args.get('inspector_id', ''),
+        date_from=date_from,
+        date_to=date_to,
+        inspectors_list=inspectors_list,
+        page=page,
+        total_pages=total_pages
+    )
+
+# ==============================================================================
+# ADMIN INSPECTOR MANAGEMENT ROUTES (PART 7)
+# ==============================================================================
+
+@app.route('/admin/inspectors')
+@admin_required
+def manage_inspectors():
+    """Admin Inspector Roster and Performance Management Console."""
+    status_filter = request.args.get('status', 'ALL').strip()
+    search_query = request.args.get('search', '').strip()
+
+    status_arg = status_filter if status_filter in ['ACTIVE', 'INACTIVE'] else None
+    inspectors = list_inspectors(status=status_arg, search=search_query if search_query else None)
+
+    return render_template(
+        'inspectors.html',
+        inspectors=inspectors,
+        status_filter=status_filter,
+        search_query=search_query
+    )
+
+@app.route('/admin/inspectors/create', methods=['POST'])
+@admin_required
+def create_inspector_route():
+    """Provisions a new Inspector account with secure hashed password."""
+    name = request.form.get('name', '').strip()
+    inspector_id = request.form.get('inspector_id', '').strip()
+    username = request.form.get('username', '').strip()
+    password = request.form.get('password', '').strip()
+    email = request.form.get('email', '').strip()
+    phone = request.form.get('phone', '').strip()
+    department = request.form.get('department', '').strip()
+
+    if not (name and inspector_id and username and password):
+        flash("Please provide all required fields (Name, Inspector Badge ID, Username, Password).", "warning")
+        return redirect(url_for('manage_inspectors'))
+
+    res = create_user(
+        inspector_id=inspector_id,
+        name=name,
+        username=username,
+        password=password,
+        email=email,
+        role='INSPECTOR',
+        phone=phone,
+        department=department
+    )
+
+    if res.get('success'):
+        flash(f"Inspector account '{name}' ({inspector_id}) created successfully.", "success")
+    else:
+        flash(f"Failed to create inspector: {res.get('error')}", "danger")
+
+    return redirect(url_for('manage_inspectors'))
+
+@app.route('/admin/inspectors/<int:user_id>/toggle-status', methods=['POST'])
+@admin_required
+def toggle_inspector_status(user_id):
+    """Activates or deactivates an inspector account."""
+    new_status = request.form.get('status', 'INACTIVE').strip()
+    if new_status not in ['ACTIVE', 'INACTIVE']:
+        new_status = 'INACTIVE'
+
+    success = update_user_status(user_id, new_status)
+    if success:
+        flash(f"Inspector status updated to {new_status}.", "success")
+    else:
+        flash("Failed to update inspector status.", "danger")
+
+    return redirect(url_for('manage_inspectors'))
+
+@app.route('/admin/inspectors/<int:user_id>/reset-password', methods=['POST'])
+@admin_required
+def reset_inspector_password_route(user_id):
+    """Resets an inspector's password."""
+    new_pwd = request.form.get('new_password', '').strip()
+    if not new_pwd or len(new_pwd) < 6:
+        flash("Password must be at least 6 characters long.", "warning")
+        return redirect(url_for('manage_inspectors'))
+
+    success = reset_user_password(user_id, new_pwd)
+    if success:
+        flash("Inspector password updated successfully.", "success")
+    else:
+        flash("Failed to reset inspector password.", "danger")
+
+    return redirect(url_for('manage_inspectors'))
 
 @app.route('/rules')
 def view_rules():
@@ -339,7 +554,8 @@ def load_sample(sample_key):
             "back": None
         },
         "evidence_image_path": evidence_path,
-        "officer_notes": f"Demo preset scan: {sample_key.upper()} scenario"
+        "officer_notes": f"Demo preset scan: {sample_key.upper()} scenario",
+        "inspector_id": session.get('user_id')
     }
 
     inspection_id = save_inspection(inspection_payload)

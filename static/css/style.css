@@ -305,3 +305,25 @@ main {
         border-radius: 0;
     }
 }
+
+/* =============================================
+   Inspection Geolocation & Leaflet Map
+   ============================================= */
+#inspectionMap,
+#resultLocationMap {
+    border-radius: 12px;
+    z-index: 10;
+}
+
+.leaflet-container {
+    font-family: inherit !important;
+}
+
+#locationSection {
+    transition: all 0.2s ease-in-out;
+}
+
+#detectLocationBtn {
+    touch-action: manipulation;
+    white-space: nowrap;
+}
