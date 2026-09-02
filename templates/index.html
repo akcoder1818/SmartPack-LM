@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}SmartPack-LM | {{ t('hero_title') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Hero Banner -->
+    <div class="card hero-card border-0 mb-4 shadow-sm text-white overflow-hidden position-relative">
+        <div class="card-body p-4 p-lg-5 position-relative z-1">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <span class="badge bg-warning text-dark px-3 py-1 mb-2 fw-bold text-uppercase tracking-wider">
+                        <i class="bi bi-cpu me-1"></i> {{ t('hero_badge') }}
+                    </span>
+                    <h1 class="display-6 fw-bold mb-2">{{ t('hero_title') }}</h1>
+                    <p class="lead mb-3 text-light-slate">
+                        {{ t('hero_desc') }}
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <span class="badge bg-navy-light text-light border border-secondary px-3 py-2">
+                            <i class="bi bi-check2-circle text-success me-1"></i> {{ t('hero_pill_rules') }}
+                        </span>
+                        <span class="badge bg-navy-light text-light border border-secondary px-3 py-2">
+                            <i class="bi bi-file-earmark-pdf text-danger me-1"></i> {{ t('hero_pill_pdf') }}
+                        </span>
+                        <span class="badge bg-navy-light text-light border border-secondary px-3 py-2">
+                            <i class="bi bi-crosshair text-warning me-1"></i> {{ t('hero_pill_evidence') }}
+                        </span>
+                    </div>
+                </div>
+                <div class="col-lg-4 d-none d-lg-block text-end">
+                    <div class="hero-seal-box p-3 d-inline-block text-center rounded-3 bg-white bg-opacity-10 border border-white border-opacity-25">
+                        <i class="bi bi-patch-check-fill fs-1 text-warning d-block mb-1"></i>
+                        <span class="fw-bold d-block text-white">{{ t('hero_seal_title') }}</span>
+                        <small class="text-white-50">{{ t('hero_seal_sub') }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick 1-Click Demo Presets Bar -->
+    <div class="card border-0 shadow-sm mb-4 bg-gradient-preset">
+        <div class="card-body p-3">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="preset-icon-badge">
+                        <i class="bi bi-lightning-charge-fill text-warning fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold text-dark">{{ t('presets_title') }}</div>
+                        <div class="small text-muted">{{ t('presets_desc') }}</div>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('load_sample', sample_key='compliant') }}" class="btn btn-sm btn-outline-success fw-semibold shadow-xs">
+                        <i class="bi bi-check-circle-fill me-1 text-success"></i> {{ t('sample_compliant') }}
+                    </a>
+                    <a href="{{ url_for('load_sample', sample_key='noncompliant') }}" class="btn btn-sm btn-outline-danger fw-semibold shadow-xs">
+                        <i class="bi bi-x-circle-fill me-1 text-danger"></i> {{ t('sample_noncompliant') }}
+                    </a>
+                    <a href="{{ url_for('load_sample', sample_key='review') }}" class="btn btn-sm btn-outline-warning text-dark fw-semibold shadow-xs">
+                        <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i> {{ t('sample_review') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload & Scan Section -->
+    <div class="row g-4">
+        <!-- Left: Upload Form -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-camera-fill text-primary fs-5"></i>
+                        <h5 class="mb-0 fw-bold">{{ t('upload_card_title') }}</h5>
+                    </div>
+                    <span class="badge bg-light text-dark border">{{ t('dual_label_support') }}</span>
+                </div>
+                <div class="card-body p-4">
+                    <form action="{{ url_for('analyze') }}" method="POST" enctype="multipart/form-data" id="scanForm">
+                        <div class="row g-4 mb-4">
+                            <!-- Front Label Upload -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-card-image me-1 text-primary"></i> {{ t('front_label') }} <span class="text-danger">*</span></span>
+                                    <small class="text-muted">{{ t('front_label_hint') }}</small>
+                                </label>
+                                <div class="dropzone-box text-center p-4 rounded-3 border-2 border-dashed position-relative" id="frontDropzone">
+                                    <input type="file" name="front_image" id="frontImageInput" class="dropzone-input" accept="image/png, image/jpeg, image/jpg, image/webp, image/bmp" required>
+                                    <div class="dropzone-content" id="frontDropzoneContent">
+                                        <i class="bi bi-cloud-arrow-up-fill fs-1 text-primary opacity-75 mb-2 d-block"></i>
+                                        <div class="fw-semibold text-dark mb-1">{{ t('front_dropzone_prompt') }}</div>
+                                        <div class="small text-muted mb-2">{{ t('file_types_hint') }}</div>
+                                        <div class="d-flex flex-wrap gap-2 justify-content-center" style="position:relative;z-index:20;">
+                                            <button type="button" class="btn btn-sm btn-primary px-3 rounded-pill" id="frontCameraBtn" onclick="event.stopPropagation();">
+                                                <i class="bi bi-camera-fill me-1"></i> Take Front Photo
+                                            </button>
+                                            <label class="btn btn-sm btn-outline-primary px-3 rounded-pill mb-0" style="cursor:pointer;">
+                                                {{ t('browse_files') }}
+                                                <input type="file" id="frontGalleryInput" accept="image/png,image/jpeg,image/jpg,image/webp,image/bmp" style="display:none;">
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="dropzone-preview d-none position-relative" id="frontPreviewBox">
+                                        <img src="" id="frontPreviewImg" class="img-fluid rounded-2 shadow-xs mb-2 preview-img" alt="Front Preview">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="small text-truncate fw-semibold text-dark" id="frontFileName"></span>
+                                            <div class="d-flex gap-1">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" id="retakeFrontBtn"><i class="bi bi-arrow-counterclockwise"></i> Retake</button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill" id="removeFrontBtn">&times; {{ t('remove_btn') }}</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Back / Statutory Label Upload -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-card-text me-1 text-primary"></i> {{ t('back_label') }}</span>
+                                    <small class="text-muted">{{ t('back_label_hint') }}</small>
+                                </label>
+                                <div class="dropzone-box text-center p-4 rounded-3 border-2 border-dashed position-relative" id="backDropzone">
+                                    <input type="file" name="back_image" id="backImageInput" class="dropzone-input" accept="image/png, image/jpeg, image/jpg, image/webp, image/bmp">
+                                    <div class="dropzone-content" id="backDropzoneContent">
+                                        <i class="bi bi-file-earmark-image-fill fs-1 text-secondary opacity-75 mb-2 d-block"></i>
+                                        <div class="fw-semibold text-dark mb-1">{{ t('back_dropzone_prompt') }}</div>
+                                        <div class="small text-muted mb-2">{{ t('back_optional_hint') }}</div>
+                                        <div class="d-flex flex-wrap gap-2 justify-content-center" style="position:relative;z-index:20;">
+                                            <button type="button" class="btn btn-sm btn-secondary px-3 rounded-pill" id="backCameraBtn" onclick="event.stopPropagation();">
+                                                <i class="bi bi-camera-fill me-1"></i> Take Back Photo
+                                            </button>
+                                            <label class="btn btn-sm btn-outline-secondary px-3 rounded-pill mb-0" style="cursor:pointer;">
+                                                {{ t('browse_files') }}
+                                                <input type="file" id="backGalleryInput" accept="image/png,image/jpeg,image/jpg,image/webp,image/bmp" style="display:none;">
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="dropzone-preview d-none position-relative" id="backPreviewBox">
+                                        <img src="" id="backPreviewImg" class="img-fluid rounded-2 shadow-xs mb-2 preview-img" alt="Back Preview">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="small text-truncate fw-semibold text-dark" id="backFileName"></span>
+                                            <div class="d-flex gap-1">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" id="retakeBackBtn"><i class="bi bi-arrow-counterclockwise"></i> Retake</button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill" id="removeBackBtn">&times; {{ t('remove_btn') }}</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Optional Officer Notes / Station -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-dark small">
+                                <i class="bi bi-pencil-square me-1"></i> {{ t('officer_notes_label') }}
+                            </label>
+                            <input type="text" name="officer_notes" class="form-control form-control-sm" placeholder="{{ t('officer_notes_placeholder') }}">
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-navy btn-lg py-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" id="submitBtn">
+                                <i class="bi bi-shield-check fs-5 text-warning"></i>
+                                <span>{{ t('analyze_btn') }}</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Processing Progress Indicator -->
+                    <div class="mt-4 p-4 rounded-3 bg-light border d-none" id="progressIndicator">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <div>
+                                <h6 class="mb-0 fw-bold text-dark">{{ t('progress_title') }}</h6>
+                                <small class="text-muted" id="progressStepText">{{ t('progress_step1') }}</small>
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" id="progressBar" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Legal Guidelines & Rule Checklist -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
+                        <i class="bi bi-journal-check text-warning fs-5"></i>
+                        {{ t('checklist_title') }}
+                    </h6>
+                </div>
+                <div class="card-body p-3">
+                    <p class="small text-muted mb-3">
+                        {{ t('checklist_desc') }}
+                    </p>
+                    <div class="list-group list-group-flush small">
+                        <div class="list-group-item px-0 py-2 border-0 d-flex gap-2">
+                            <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                            <div>
+                                <strong>Rule 6(1)(a):</strong> {{ t('rule_a_summary') }}
+                            </div>
+                        </div>
+                        <div class="list-group-item px-0 py-2 border-0 d-flex gap-2">
+                            <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                            <div>
+                                <strong>Rule 6(1)(b):</strong> {{ t('rule_b_summary') }}
+                            </div>
+                        </div>
+                        <div class="list-group-item px-0 py-2 border-0 d-flex gap-2">
+                            <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                            <div>
+                                <strong>Rule 6(1)(c):</strong> {{ t('rule_c_summary') }}
+                            </div>
+                        </div>
+                        <div class="list-group-item px-0 py-2 border-0 d-flex gap-2">
+                            <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                            <div>
+                                <strong>Rule 6(1)(d):</strong> {{ t('rule_d_summary') }}
+                            </div>
+                        </div>
+                        <div class="list-group-item px-0 py-2 border-0 d-flex gap-2">
+                            <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                            <div>
+                                <strong>Rule 6(1)(e):</strong> {{ t('rule_e_summary') }}
+                            </div>
+                        </div>
+                        <div class="list-group-item px-0 py-2 border-0 d-flex gap-2">
+                            <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                            <div>
+                                <strong>Rule 6(1)(f):</strong> {{ t('rule_f_summary') }}
+                            </div>
+                        </div>
+                        <div class="list-group-item px-0 py-2 border-0 d-flex gap-2">
+                            <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                            <div>
+                                <strong>Rule 6(1)(g):</strong> {{ t('rule_g_summary') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decision Support Notice Card -->
+            <div class="card border-0 shadow-sm bg-warning bg-opacity-10 border-start border-warning border-4">
+                <div class="card-body p-3">
+                    <div class="d-flex gap-2">
+                        <i class="bi bi-info-circle-fill text-warning fs-5"></i>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">{{ t('decision_support_title') }}</h6>
+                            <p class="small text-muted mb-0">
+                                {{ t('decision_support_desc') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== In-Browser Camera Modal ===== -->
+<div class="modal fade" id="cameraModal" tabindex="-1" aria-modal="true" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-fullscreen-sm-down modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark border-0">
+
+            <!-- Header -->
+            <div class="modal-header border-0 pb-0 pt-3 px-3">
+                <h6 class="modal-title text-white fw-bold d-flex align-items-center gap-2 mb-0">
+                    <i class="bi bi-camera-fill text-warning"></i>
+                    <span id="cameraModalTitle">Take Photo</span>
+                </h6>
+                <button type="button" class="btn-close btn-close-white" id="cameraCloseBtn" aria-label="Close"></button>
+            </div>
+
+            <!-- Body: video + captured preview -->
+            <div class="modal-body p-2 p-md-3">
+
+                <!-- Live viewfinder -->
+                <div id="cameraViewfinder" class="position-relative w-100 mb-2 text-center">
+                    <video id="cameraVideo" autoplay playsinline muted
+                           class="rounded-3 w-100"
+                           style="max-height:60vh;object-fit:cover;background:#000;display:block;"></video>
+                    <!-- Capture button overlay -->
+                    <div class="d-flex justify-content-center gap-3 mt-2">
+                        <button type="button" class="btn btn-warning fw-bold px-4 py-2 rounded-pill shadow" id="captureBtn">
+                            <i class="bi bi-camera-fill me-1"></i> Capture Photo
+                        </button>
+                        <button type="button" class="btn btn-outline-light px-3 py-2 rounded-pill" id="cameraCancelBtn">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Permission denied message -->
+                <div id="cameraPermissionError" class="d-none text-center py-4">
+                    <i class="bi bi-camera-video-off-fill fs-1 text-danger mb-3 d-block"></i>
+                    <p class="text-white fw-semibold mb-1">Camera permission was denied.</p>
+                    <p class="text-white-50 small mb-3">
+                        You can allow camera access in your browser settings, or use <strong>Browse Files</strong> instead.
+                    </p>
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" id="cameraErrorCloseBtn">
+                        Close &amp; Use Gallery
+                    </button>
+                </div>
+
+                <!-- Not-secure context warning (HTTP) -->
+                <div id="cameraHttpWarning" class="d-none text-center py-4">
+                    <i class="bi bi-shield-exclamation fs-1 text-warning mb-3 d-block"></i>
+                    <p class="text-white fw-semibold mb-1">Camera not available on HTTP.</p>
+                    <p class="text-white-50 small mb-3">
+                        <code>getUserMedia</code> requires a <strong>secure context (HTTPS)</strong>.<br>
+                        You are accessing this page over plain HTTP (<code>http://10.103.2.155:5000</code>).<br>
+                        Please use <strong>Browse Files</strong> to select a photo from your gallery, or set up HTTPS — see instructions below.
+                    </p>
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" id="cameraHttpCloseBtn">
+                        Close &amp; Use Gallery
+                    </button>
+                </div>
+
+                <!-- After capture: preview + Use Photo / Retake -->
+                <div id="cameraCaptureReview" class="d-none text-center">
+                    <img id="capturedPreviewImg" src="" alt="Captured photo"
+                         class="rounded-3 w-100 mb-3"
+                         style="max-height:55vh;object-fit:contain;background:#111;">
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        <button type="button" class="btn btn-success fw-bold px-4 py-2 rounded-pill shadow" id="usePhotoBtn">
+                            <i class="bi bi-check-circle-fill me-1"></i> Use Photo
+                        </button>
+                        <button type="button" class="btn btn-outline-warning px-3 py-2 rounded-pill" id="retakeBtn">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Retake
+                        </button>
+                        <button type="button" class="btn btn-outline-light px-3 py-2 rounded-pill" id="cancelAfterCaptureBtn">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+
+            </div><!-- /modal-body -->
+        </div>
+    </div>
+</div>
+
+<!-- Hidden canvas for frame capture (not visible) -->
+<canvas id="cameraCanvas" style="display:none;"></canvas>
+
+{% endblock %}

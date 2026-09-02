@@ -1,0 +1,307 @@
+/* SmartPack-LM: GovTech Theme Stylesheet */
+
+:root {
+    --navy-primary: #0A2540;
+    --navy-dark: #06192C;
+    --navy-light: #1E3A5F;
+    --saffron-gold: #FF9933;
+    --saffron-dark: #D97706;
+    --emerald-green: #10B981;
+    --emerald-dark: #065F46;
+    --danger-red: #EF4444;
+    --danger-dark: #991B1B;
+    --slate-bg: #F8FAFC;
+    --slate-border: #E2E8F0;
+    --slate-text: #64748B;
+    --dark-text: #0F172A;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--slate-bg);
+    color: var(--dark-text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* GovTech Topbar */
+.gov-topbar {
+    background-color: var(--navy-dark);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--saffron-gold);
+}
+
+.gov-title {
+    color: #E2E8F0;
+}
+
+.flag-stripe {
+    display: inline-block;
+    width: 16px;
+    height: 10px;
+    background: linear-gradient(180deg, #FF9933 33%, #FFFFFF 33%, #FFFFFF 66%, #138808 66%);
+    border-radius: 2px;
+}
+
+/* Navbar */
+.bg-navy {
+    background-color: var(--navy-primary) !important;
+}
+
+.brand-emblem {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 10px;
+    border-radius: 8px;
+}
+
+.brand-name {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+    color: #FFFFFF;
+}
+
+.brand-sub {
+    font-size: 0.7rem;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.nav-link {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #CBD5E1 !important;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: #FFFFFF !important;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Hero Card */
+.hero-card {
+    background: linear-gradient(135deg, var(--navy-primary) 0%, var(--navy-dark) 100%);
+    border-radius: 12px;
+}
+
+.hero-card::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(255, 153, 51, 0.12) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.text-light-slate {
+    color: #CBD5E1;
+}
+
+.bg-navy-light {
+    background-color: rgba(30, 58, 95, 0.6) !important;
+}
+
+/* Preset Bar */
+.bg-gradient-preset {
+    background: linear-gradient(90deg, #FFFFFF 0%, #F1F5F9 100%);
+    border: 1px solid var(--slate-border);
+    border-radius: 10px;
+}
+
+.preset-icon-badge {
+    background: #FEF3C7;
+    border-radius: 8px;
+    padding: 6px 10px;
+}
+
+.shadow-xs {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+/* Dropzone */
+.dropzone-box {
+    border: 2px dashed #94A3B8;
+    background-color: #F8FAFC;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dropzone-box:hover, .dropzone-box.dragover {
+    border-color: var(--navy-primary);
+    background-color: #EFF6FF;
+}
+
+.dropzone-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.preview-img {
+    max-height: 180px;
+    object-fit: contain;
+    width: 100%;
+    background-color: #FFFFFF;
+    border: 1px solid var(--slate-border);
+}
+
+/* Buttons */
+.btn-navy {
+    background-color: var(--navy-primary);
+    color: #FFFFFF;
+    border: 1px solid var(--navy-primary);
+    transition: all 0.2s ease;
+}
+
+.btn-navy:hover {
+    background-color: var(--navy-dark);
+    color: #FFFFFF;
+    border-color: var(--navy-dark);
+}
+
+/* KPI Cards */
+.kpi-card {
+    border-radius: 10px;
+    border: 1px solid var(--slate-border) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+}
+
+.kpi-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-navy-subtle {
+    background-color: #E2E8F0;
+}
+
+/* Evidence and Zoomable Image */
+.evidence-img-container {
+    border: 1px solid var(--slate-border);
+    max-height: 440px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zoomable-img {
+    max-height: 420px;
+    object-fit: contain;
+}
+
+/* Tables */
+.statutory-table th {
+    font-weight: 700;
+    color: #475569;
+}
+
+.statutory-table td {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+/* Rule Card */
+.rule-card {
+    border-radius: 10px;
+    border: 1px solid var(--slate-border) !important;
+}
+
+/* Footer */
+.gov-footer {
+    background-color: var(--navy-dark);
+    border-top: 3px solid var(--saffron-gold);
+}
+
+.text-slate {
+    color: #94A3B8;
+}
+
+/* Monospace text */
+.font-monospace {
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* =============================================
+   In-Browser Camera Modal
+   ============================================= */
+#cameraModal .modal-content {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+#cameraVideo {
+    border-radius: 12px;
+    background: #000;
+    display: block;
+    width: 100%;
+    max-height: 60vh;
+    object-fit: cover;
+}
+
+#capturedPreviewImg {
+    border-radius: 12px;
+    background: #111;
+    max-height: 55vh;
+    object-fit: contain;
+    width: 100%;
+}
+
+/* Make capture button large and easy to tap on mobile */
+#captureBtn {
+    min-width: 160px;
+    font-size: 1rem;
+    padding: 12px 28px;
+    touch-action: manipulation;
+}
+
+#usePhotoBtn {
+    min-width: 140px;
+    font-size: 1rem;
+    padding: 10px 24px;
+    touch-action: manipulation;
+}
+
+/* Fullscreen on small phones */
+@media (max-width: 576px) {
+    #cameraModal .modal-content {
+        border-radius: 0;
+    }
+    #cameraVideo {
+        max-height: 55vh;
+        border-radius: 0;
+    }
+}

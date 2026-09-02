@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('dashboard_title') }} | SmartPack-LM{% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js for GovTech Analytics -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Dashboard Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-warning text-dark fw-bold">{{ t('department_name') }}</span>
+                <span class="text-muted small">{{ t('dashboard_sub') }}</span>
+            </div>
+            <h2 class="fw-bold text-navy mb-0">{{ t('dashboard_title') }}</h2>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('index') }}" class="btn btn-navy d-flex align-items-center gap-1 shadow-sm">
+                <i class="bi bi-qr-code-scan"></i>
+                <span class="fw-semibold">{{ t('nav_scan') }}</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 4 KPI Summary Cards -->
+    <div class="row g-3 mb-4">
+        <!-- 1. Total Inspections -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm kpi-card bg-white h-100">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold mb-1">{{ t('kpi_total') }}</div>
+                        <div class="display-6 fw-bold text-dark">{{ metrics.total_inspections }}</div>
+                        <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ t('kpi_total_sub') }}</small>
+                    </div>
+                    <div class="kpi-icon bg-navy-subtle text-navy">
+                        <i class="bi bi-box-seam fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Compliant Count & Rate -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm kpi-card bg-white h-100">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold mb-1">{{ t('kpi_compliant') }}</div>
+                        <div class="display-6 fw-bold text-success">{{ metrics.compliant_count }}</div>
+                        <small class="text-success fw-semibold"><i class="bi bi-arrow-up-circle me-1"></i>{{ metrics.compliance_rate }}% {{ t('kpi_compliant_sub') }}</small>
+                    </div>
+                    <div class="kpi-icon bg-success-subtle text-success">
+                        <i class="bi bi-shield-check fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Needs Review -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm kpi-card bg-white h-100">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold mb-1">{{ t('kpi_review') }}</div>
+                        <div class="display-6 fw-bold text-warning">{{ metrics.review_count }}</div>
+                        <small class="text-warning fw-semibold"><i class="bi bi-exclamation-triangle me-1"></i>{{ t('kpi_review_sub') }}</small>
+                    </div>
+                    <div class="kpi-icon bg-warning-subtle text-warning">
+                        <i class="bi bi-shield-exclamation fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Non-Compliant -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm kpi-card bg-white h-100">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold mb-1">{{ t('kpi_violations') }}</div>
+                        <div class="display-6 fw-bold text-danger">{{ metrics.non_compliant_count }}</div>
+                        <small class="text-danger fw-semibold"><i class="bi bi-x-circle me-1"></i>{{ t('kpi_violations_sub') }}</small>
+                    </div>
+                    <div class="kpi-icon bg-danger-subtle text-danger">
+                        <i class="bi bi-shield-x fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Charts Row -->
+    <div class="row g-4 mb-4">
+        <!-- Violation Distribution Chart -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
+                        <i class="bi bi-bar-chart-line-fill text-primary fs-5"></i>
+                        {{ t('chart_violations_title') }}
+                    </h6>
+                    <span class="badge bg-light text-dark border">{{ t('rule_name_short') }}</span>
+                </div>
+                <div class="card-body p-3">
+                    <div style="height: 280px;">
+                        <canvas id="violationsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Doughnut Chart -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
+                        <i class="bi bi-pie-chart-fill text-warning fs-5"></i>
+                        {{ t('chart_status_title') }}
+                    </h6>
+                </div>
+                <div class="card-body p-3 d-flex flex-column align-items-center justify-content-center">
+                    <div style="height: 220px; width: 220px;">
+                        <canvas id="statusDoughnutChart"></canvas>
+                    </div>
+                    <div class="d-flex justify-content-center gap-3 mt-3 small">
+                        <span><span class="badge bg-success">&nbsp;</span> {{ t('badge_pass') }}</span>
+                        <span><span class="badge bg-warning text-dark">&nbsp;</span> {{ t('badge_review') }}</span>
+                        <span><span class="badge bg-danger">&nbsp;</span> {{ t('badge_fail') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inspection Audit History Table -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-bottom">
+            <div class="row g-3 align-items-center justify-content-between">
+                <div class="col-md-4">
+                    <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
+                        <i class="bi bi-clock-history text-secondary fs-5"></i>
+                        {{ t('audit_trail_title') }} ({{ total_count }})
+                    </h6>
+                </div>
+                <!-- Search & Status Filter Controls -->
+                <div class="col-md-8">
+                    <form action="{{ url_for('dashboard') }}" method="GET" class="d-flex flex-wrap gap-2 justify-content-md-end">
+                        <div class="input-group input-group-sm" style="max-width: 260px;">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" name="search" class="form-control border-start-0" placeholder="{{ t('search_placeholder') }}" value="{{ search_query or '' }}">
+                        </div>
+                        <select name="status" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                            <option value="ALL" {% if status_filter == 'ALL' or not status_filter %}selected{% endif %}>{{ t('filter_all') }}</option>
+                            <option value="COMPLIANT" {% if status_filter == 'COMPLIANT' %}selected{% endif %}>{{ t('filter_compliant') }}</option>
+                            <option value="NEEDS REVIEW" {% if status_filter == 'NEEDS REVIEW' %}selected{% endif %}>{{ t('filter_review') }}</option>
+                            <option value="NON-COMPLIANT" {% if status_filter == 'NON-COMPLIANT' %}selected{% endif %}>{{ t('filter_non_compliant') }}</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-navy">{{ t('filter_btn') }}</button>
+                        {% if search_query or (status_filter and status_filter != 'ALL') %}
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-secondary">{{ t('reset_btn') }}</a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-uppercase">
+                        <tr>
+                            <th class="ps-3">{{ t('th_id') }}</th>
+                            <th>{{ t('th_timestamp') }}</th>
+                            <th>{{ t('th_product') }}</th>
+                            <th>{{ t('th_manufacturer') }}</th>
+                            <th>{{ t('th_net_qty') }}</th>
+                            <th>{{ t('th_mrp') }}</th>
+                            <th>{{ t('th_score') }}</th>
+                            <th>{{ t('th_status') }}</th>
+                            <th class="text-end pe-3">{{ t('th_actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if inspections %}
+                            {% for item in inspections %}
+                            <tr>
+                                <td class="ps-3 fw-bold font-monospace text-navy">
+                                    SP-LM-{{ "%04d"|format(item.id) }}
+                                </td>
+                                <td class="small text-muted text-nowrap">
+                                    {{ item.timestamp }}
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark">{{ item.product_name }}</div>
+                                    <small class="text-muted">{{ item.country_of_origin }}</small>
+                                </td>
+                                <td class="small text-muted text-truncate" style="max-width: 180px;">
+                                    {{ item.manufacturer }}
+                                </td>
+                                <td class="small fw-semibold text-dark text-nowrap">
+                                    {{ item.net_quantity }}
+                                </td>
+                                <td class="small fw-semibold text-dark text-nowrap">
+                                    {{ item.mrp }}
+                                </td>
+                                <td>
+                                    <span class="badge {% if item.compliance_score >= 85 %}bg-success{% elif item.compliance_score >= 60 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                        {{ item.compliance_score }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if item.overall_status == 'COMPLIANT' %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">{{ get_translated_status('COMPLIANT') }}</span>
+                                    {% elif item.overall_status == 'NEEDS REVIEW' %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">{{ get_translated_status('NEEDS REVIEW') }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">{{ get_translated_status('NON-COMPLIANT') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-3 text-nowrap">
+                                    <a href="{{ url_for('view_result', inspection_id=item.id) }}" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill me-1" title="{{ t('action_view') }}">
+                                        <i class="bi bi-eye-fill"></i> {{ t('action_view') }}
+                                    </a>
+                                    <a href="{{ url_for('download_report', inspection_id=item.id, lang=current_lang) }}" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill me-1" title="{{ t('download_pdf') }}">
+                                        <i class="bi bi-file-earmark-pdf-fill"></i> {{ t('action_pdf') }}
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill delete-btn" data-id="{{ item.id }}" title="{{ t('remove_btn') }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                    <h6>{{ t('no_records') }}</h6>
+                                    <p class="small text-muted mb-3">{{ t('no_records_sub') }}</p>
+                                    <a href="{{ url_for('index') }}" class="btn btn-sm btn-navy">{{ t('start_first') }}</a>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Violations Bar Chart
+    const violationData = {{ metrics.violation_counts|tojson }};
+    const vLabels = Object.keys(violationData);
+    const vCounts = Object.values(violationData);
+
+    const ctxV = document.getElementById('violationsChart');
+    if (ctxV) {
+        new Chart(ctxV, {
+            type: 'bar',
+            data: {
+                labels: vLabels,
+                datasets: [{
+                    label: '{{ t("violations_detected") }}',
+                    data: vCounts,
+                    backgroundColor: [
+                        '#EF4444', '#F59E0B', '#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#64748B'
+                    ],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Status Doughnut Chart
+    const ctxD = document.getElementById('statusDoughnutChart');
+    if (ctxD) {
+        new Chart(ctxD, {
+            type: 'doughnut',
+            data: {
+                labels: ['{{ get_translated_status("COMPLIANT") }}', '{{ get_translated_status("NEEDS REVIEW") }}', '{{ get_translated_status("NON-COMPLIANT") }}'],
+                datasets: [{
+                    data: [
+                        {{ metrics.compliant_count }},
+                        {{ metrics.review_count }},
+                        {{ metrics.non_compliant_count }}
+                    ],
+                    backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+
+    // Delete record event listener
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            if (confirm('Delete inspection record #' + id + '?')) {
+                fetch('/api/delete/' + id, { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert('Error deleting record');
+                        }
+                    });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
