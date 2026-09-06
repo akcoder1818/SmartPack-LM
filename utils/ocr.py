@@ -108,18 +108,23 @@ def extract_text_tesseract(img_bgr, thresh_img):
     """Attempt extraction using pytesseract if installed."""
     try:
         import pytesseract
+        import shutil
         
         # Test if tesseract is available
-        # You can set tesseract cmd if path is standard in Windows
-        tesseract_paths = [
-            r"C:\Program Files\Tesseract-OCR\tesseract.exe",
-            r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
-            r"C:\Users\ASUS\AppData\Local\Tesseract-OCR\tesseract.exe"
-        ]
-        for p in tesseract_paths:
-            if os.path.exists(p):
-                pytesseract.pytesseract.tesseract_cmd = p
-                break
+        which_tess = shutil.which("tesseract")
+        if which_tess:
+            pytesseract.pytesseract.tesseract_cmd = which_tess
+        else:
+            tesseract_paths = [
+                r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+                r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+                r"C:\Users\ASUS\AppData\Local\Programs\Tesseract-OCR\tesseract.exe",
+                r"C:\Users\ASUS\AppData\Local\Tesseract-OCR\tesseract.exe"
+            ]
+            for p in tesseract_paths:
+                if os.path.exists(p):
+                    pytesseract.pytesseract.tesseract_cmd = p
+                    break
 
         # Run OCR on thresholded image and original grayscale
         data = pytesseract.image_to_data(thresh_img, output_type=pytesseract.Output.DICT)
@@ -195,9 +200,10 @@ def extract_text_easyocr(img_bgr):
 
 def extract_text_smart_fallback(image_path, img_bgr):
     """
-    Intelligent Demo / Synthetic OCR fallback.
-    Ensures zero failure during hackathon demonstrations if native C++ OCR engines
-    are not installed on the evaluation machine.
+    Demo / Synthetic OCR fallback for 1-Click Demo Presets ONLY.
+    Ensures zero failure during hackathon demonstrations for designated presets.
+    For arbitrary user uploads / live camera scans, this NEVER injects fake data,
+    preventing false positive compliance.
     """
     filename = os.path.basename(image_path).lower() if image_path else ""
     h, w = (img_bgr.shape[:2]) if img_bgr is not None else (1000, 800)
@@ -238,17 +244,17 @@ def extract_text_smart_fallback(image_path, img_bgr):
             "Customer Feedback: helpline@surfmaxindia.com"
         ]
     else:
-        # Default synthesized fallback representing a typical packaged food commodity
-        text_lines = [
-            "PREMIUM PACKAGED COMMODITY",
-            "Manufactured by: Apex Consumer Brands Pvt Ltd, G-14 Okhla Industrial Area Phase III, New Delhi - 110020, India",
-            "Country of Origin: India",
-            "Net Quantity: 500 g",
-            "MRP: Rs. 120.00 (inclusive of all taxes)",
-            "Date of Mfg: 08/2026",
-            "Best Before: 12 Months from Packaging",
-            "Consumer Care: Toll Free 1800-102-8888 | care@apexbrands.in | Address: Apex Care Cell, New Delhi - 110020"
-        ]
+        # User uploaded or non-preset image:
+        # DO NOT inject fake text. Accurately report that no text could be extracted.
+        return {
+            "engine": "SmartPack-LM OCR Engine",
+            "full_text": "",
+            "lines": [],
+            "tokens": [],
+            "success": False,
+            "is_insufficient_evidence": True,
+            "error": "No legible statutory text detected on the package label."
+        }
 
     tokens = []
     y_step = int(h / (len(text_lines) + 2))
@@ -261,11 +267,12 @@ def extract_text_smart_fallback(image_path, img_bgr):
         })
 
     return {
-        "engine": "SmartPack-LM Intelligent Fallback OCR",
+        "engine": "SmartPack-LM Demo Preset Engine",
         "full_text": "\n".join(text_lines),
         "lines": text_lines,
         "tokens": tokens,
-        "success": True
+        "success": True,
+        "is_preset": True
     }
 
 def run_ocr_pipeline(image_path):

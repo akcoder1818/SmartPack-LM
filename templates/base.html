@@ -23,7 +23,39 @@
     <div class="gov-topbar py-1">
         <div class="container-fluid px-4 d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-2">
-                <span class="flag-stripe"></span>
+                <svg class="flag-icon" width="22" height="15" viewBox="0 0 24 16" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Flag of India">
+                    <rect width="24" height="5.33" fill="#FF9933"/>
+                    <rect y="5.33" width="24" height="5.34" fill="#FFFFFF"/>
+                    <rect y="10.67" width="24" height="5.33" fill="#138808"/>
+                    <circle cx="12" cy="8" r="2.2" fill="none" stroke="#000080" stroke-width="0.45"/>
+                    <circle cx="12" cy="8" r="0.5" fill="#000080"/>
+                    <g stroke="#000080" stroke-width="0.22" stroke-linecap="round">
+                        <line x1="12" y1="8" x2="12" y2="5.85"/>
+                        <line x1="12" y1="8" x2="12" y2="10.15"/>
+                        <line x1="12" y1="8" x2="9.85" y2="8"/>
+                        <line x1="12" y1="8" x2="14.15" y2="8"/>
+                        <line x1="12" y1="8" x2="10.48" y2="6.48"/>
+                        <line x1="12" y1="8" x2="13.52" y2="9.52"/>
+                        <line x1="12" y1="8" x2="10.48" y2="9.52"/>
+                        <line x1="12" y1="8" x2="13.52" y2="6.48"/>
+                        <line x1="12" y1="8" x2="11.23" y2="6.01"/>
+                        <line x1="12" y1="8" x2="12.77" y2="9.99"/>
+                        <line x1="12" y1="8" x2="12.77" y2="6.01"/>
+                        <line x1="12" y1="8" x2="11.23" y2="9.99"/>
+                        <line x1="12" y1="8" x2="10.01" y2="7.23"/>
+                        <line x1="12" y1="8" x2="13.99" y2="8.77"/>
+                        <line x1="12" y1="8" x2="10.01" y2="8.77"/>
+                        <line x1="12" y1="8" x2="13.99" y2="7.23"/>
+                        <line x1="12" y1="8" x2="11.61" y2="5.89"/>
+                        <line x1="12" y1="8" x2="12.39" y2="10.11"/>
+                        <line x1="12" y1="8" x2="12.39" y2="5.89"/>
+                        <line x1="12" y1="8" x2="11.61" y2="10.11"/>
+                        <line x1="12" y1="8" x2="9.89" y2="7.61"/>
+                        <line x1="12" y1="8" x2="14.11" y2="8.39"/>
+                        <line x1="12" y1="8" x2="9.89" y2="8.39"/>
+                        <line x1="12" y1="8" x2="14.11" y2="7.61"/>
+                    </g>
+                </svg>
                 <span class="gov-title">{{ t('gov_india') }} &bull; {{ t('ministry_name') }}</span>
             </div>
             <div class="d-flex align-items-center gap-3 text-white small">
@@ -62,13 +94,30 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link px-3 {% if request.endpoint == 'inspection_history' %}active{% endif %}" href="{{ url_for('inspection_history') }}">
-                            <i class="bi bi-clock-history me-1"></i> Inspections
+                            <i class="bi bi-clock-history me-1"></i> {% if current_user and current_user.role != 'ADMIN' %}My Inspections{% else %}Inspections{% endif %}
                         </a>
                     </li>
+                    {% if current_user and current_user.role == 'USER' %}
+                    <li class="nav-item">
+                        <a class="nav-link px-3 {% if request.endpoint == 'list_user_complaints' %}active{% endif %}" href="{{ url_for('list_user_complaints') }}">
+                            <i class="bi bi-shield-exclamation me-1 text-warning"></i> My Complaints
+                        </a>
+                    </li>
+                    {% endif %}
                     {% if current_user and current_user.role == 'ADMIN' %}
                     <li class="nav-item">
+                        <a class="nav-link px-3 {% if request.endpoint == 'admin_complaints' %}active{% endif %}" href="{{ url_for('admin_complaints') }}">
+                            <i class="bi bi-megaphone-fill me-1 text-danger"></i> Complaints
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link px-3 {% if request.endpoint == 'manage_inspectors' %}active{% endif %}" href="{{ url_for('manage_inspectors') }}">
-                            <i class="bi bi-people-fill me-1 text-warning"></i> Inspectors
+                            <i class="bi bi-shield-lock-fill me-1 text-warning"></i> Inspectors
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3 {% if request.endpoint == 'admin_users' %}active{% endif %}" href="{{ url_for('admin_users') }}">
+                            <i class="bi bi-people-fill me-1 text-info"></i> Registered Users
                         </a>
                     </li>
                     {% endif %}
@@ -143,7 +192,19 @@
                                         {% if current_user.role == 'ADMIN' %}All Inspections{% else %}My Inspections{% endif %}
                                     </a>
                                 </li>
+                                {% if current_user.role == 'USER' %}
+                                <li>
+                                    <a class="dropdown-item py-2 small" href="{{ url_for('list_user_complaints') }}">
+                                        <i class="bi bi-shield-exclamation me-2 text-warning"></i> My Complaints
+                                    </a>
+                                </li>
+                                {% endif %}
                                 {% if current_user.role == 'ADMIN' %}
+                                <li>
+                                    <a class="dropdown-item py-2 small" href="{{ url_for('admin_complaints') }}">
+                                        <i class="bi bi-megaphone-fill me-2 text-danger"></i> Complaints Console
+                                    </a>
+                                </li>
                                 <li>
                                     <a class="dropdown-item py-2 small" href="{{ url_for('manage_inspectors') }}">
                                         <i class="bi bi-people-fill me-2 text-warning"></i> Manage Inspectors

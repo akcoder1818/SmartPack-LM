@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Citizen Registration | SmartPack-LM Legal Metrology Portal{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <!-- Header Banner -->
+                <div class="bg-navy p-4 text-center text-white position-relative">
+                    <div class="brand-emblem mx-auto mb-2" style="width: 54px; height: 54px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-person-plus-fill text-warning fs-2"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">Citizen Portal Registration</h4>
+                    <p class="small text-white-50 mb-0">Legal Metrology Consumer Grievance &amp; Verification Network</p>
+                    <span class="badge bg-warning text-dark px-3 py-1 font-monospace mt-2">CITIZEN ACCOUNT</span>
+                </div>
+
+                <!-- Form Body -->
+                <div class="card-body p-4 p-md-5 bg-white">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show small" role="alert">
+                                    <i class="bi bi-exclamation-circle-fill me-1"></i> {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('register') }}">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark small">
+                                <i class="bi bi-person text-primary me-1"></i> Full Name <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
+                                <input type="text" name="name" class="form-control" placeholder="e.g. Ramesh Kumar" required autofocus value="{{ form_data.get('name', '') if form_data else '' }}">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label fw-semibold text-dark small">
+                                    <i class="bi bi-person-badge text-primary me-1"></i> Username <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted">@</span>
+                                    <input type="text" name="username" class="form-control" placeholder="ramesh123" required autocomplete="username" value="{{ form_data.get('username', '') if form_data else '' }}">
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-semibold text-dark small">
+                                    <i class="bi bi-telephone text-primary me-1"></i> Mobile Number
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-phone"></i></span>
+                                    <input type="tel" name="phone" class="form-control" placeholder="9876543210" pattern="[0-9]{10}" value="{{ form_data.get('phone', '') if form_data else '' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark small">
+                                <i class="bi bi-envelope-at text-primary me-1"></i> Email Address <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
+                                <input type="email" name="email" class="form-control" placeholder="ramesh@example.com" required autocomplete="email" value="{{ form_data.get('email', '') if form_data else '' }}">
+                            </div>
+                            <div class="form-text small text-muted">Used for complaint updates and audit reports.</div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-6">
+                                <label class="form-label fw-semibold text-dark small">
+                                    <i class="bi bi-lock text-primary me-1"></i> Password <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-key"></i></span>
+                                    <input type="password" name="password" id="regPassword" class="form-control" placeholder="Min. 6 chars" minlength="6" required autocomplete="new-password">
+                                    <button class="btn btn-outline-secondary toggle-pwd-btn" type="button" data-target="regPassword">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-semibold text-dark small">
+                                    <i class="bi bi-shield-check text-primary me-1"></i> Confirm Password <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-check2"></i></span>
+                                    <input type="password" name="confirm_password" id="regConfirmPassword" class="form-control" placeholder="Confirm password" minlength="6" required autocomplete="new-password">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" class="btn btn-navy btn-lg py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-person-check-fill text-warning fs-5"></i>
+                                <span>Create Citizen Account</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="p-3 bg-light rounded-3 text-center border">
+                        <div class="small text-muted mb-1">Already registered with SmartPack-LM?</div>
+                        <a href="{{ url_for('login') }}" class="small fw-bold text-primary text-decoration-none">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Existing Account
+                        </a>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('index') }}" class="small text-decoration-none text-muted">
+                            <i class="bi bi-arrow-left me-1"></i> Return to Public Scan Area
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.toggle-pwd-btn').forEach(function(btn) {
+        btn.addEventListener('click', function () {
+            const targetId = this.getAttribute('data-target');
+            const pwdInput = document.getElementById(targetId);
+            if (pwdInput) {
+                const isPassword = pwdInput.type === 'password';
+                pwdInput.type = isPassword ? 'text' : 'password';
+                this.innerHTML = isPassword ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

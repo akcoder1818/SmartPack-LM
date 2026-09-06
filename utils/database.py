@@ -65,6 +65,33 @@ def init_db(db_path=None):
     """)
     conn.commit()
 
+    # Create complaints table for citizen grievance redressal
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS complaints (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        complaint_no TEXT UNIQUE NOT NULL,
+        user_id INTEGER NOT NULL,
+        user_name TEXT,
+        user_email TEXT,
+        contact_number TEXT,
+        inspection_id INTEGER NOT NULL,
+        product_name TEXT,
+        compliance_result TEXT,
+        violations TEXT,
+        location_address TEXT,
+        latitude REAL,
+        longitude REAL,
+        inspection_timestamp TEXT,
+        created_at TEXT NOT NULL,
+        evidence_image_path TEXT,
+        retailer_details TEXT,
+        description TEXT,
+        status TEXT NOT NULL DEFAULT 'Submitted',
+        admin_notes TEXT
+    )
+    """)
+    conn.commit()
+
     # Gracefully migrate inspections table if columns are missing
     cursor.execute("PRAGMA table_info(inspections)")
     columns = [col["name"] for col in cursor.fetchall()]
@@ -81,6 +108,27 @@ def init_db(db_path=None):
             conn.commit()
         except Exception as e:
             print(f"[SmartPack-LM] Database migration notice (inspector_id): {e}")
+
+    if "user_id" not in columns:
+        try:
+            cursor.execute("ALTER TABLE inspections ADD COLUMN user_id INTEGER")
+            conn.commit()
+        except Exception as e:
+            print(f"[SmartPack-LM] Database migration notice (user_id): {e}")
+
+    if "performed_by" not in columns:
+        try:
+            cursor.execute("ALTER TABLE inspections ADD COLUMN performed_by TEXT")
+            conn.commit()
+        except Exception as e:
+            print(f"[SmartPack-LM] Database migration notice (performed_by): {e}")
+
+    if "role" not in columns:
+        try:
+            cursor.execute("ALTER TABLE inspections ADD COLUMN role TEXT DEFAULT 'PUBLIC'")
+            conn.commit()
+        except Exception as e:
+            print(f"[SmartPack-LM] Database migration notice (role): {e}")
 
     # Ensure default Admin account exists if no admin user present
     cursor.execute("SELECT id FROM users WHERE role = 'ADMIN' LIMIT 1")
@@ -131,6 +179,18 @@ def create_user(*args, db_path=None, **kwargs):
     pwd_hash = generate_password_hash(raw_password) if raw_password else user_data.get("password_hash")
     now_str = user_data.get("created_at") or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+    role = user_data.get("role", "INSPECTOR").upper()
+    badge_id = user_data.get("inspector_id")
+    if not badge_id:
+        import time
+        if role == "USER":
+            badge_id = f"USR-{int(time.time() * 1000)}"
+        else:
+            badge_id = f"INS-{int(time.time() * 1000)}"
+
+    default_dept = "Consumer / Citizen" if role == "USER" else "Legal Metrology Enforcement"
+    department = user_data.get("department") or default_dept
+
     try:
         cursor.execute("""
         INSERT INTO users (
@@ -138,14 +198,14 @@ def create_user(*args, db_path=None, **kwargs):
             role, phone, department, status, created_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
-            user_data.get("inspector_id"),
+            badge_id,
             user_data.get("name"),
             user_data.get("username", "").strip().lower(),
             user_data.get("email", ""),
             pwd_hash,
-            user_data.get("role", "INSPECTOR"),
+            role,
             user_data.get("phone", ""),
-            user_data.get("department", "Legal Metrology Enforcement"),
+            department,
             user_data.get("status", "ACTIVE"),
             now_str
         ))
@@ -224,6 +284,37 @@ def update_user_status(user_id, status, db_path=None):
     conn.close()
     return updated
 
+def list_users(search=None, role=None, status=None, db_path=None):
+    """
+    Retrieves directory of registered portal users without exposing password hashes.
+    Supports filtering by search query (name, username, email, phone), role, and status.
+    """
+    conn = get_db_connection(db_path)
+    cursor = conn.cursor()
+    query = """
+    SELECT u.id, u.inspector_id, u.name, u.username, u.email, u.role, u.phone, u.department, u.status, u.created_at,
+           (SELECT COUNT(*) FROM inspections i WHERE i.user_id = u.id OR (i.inspector_id = u.id AND u.role IN ('INSPECTOR', 'ADMIN'))) as scan_count
+    FROM users u
+    WHERE 1=1
+    """
+    params = []
+    if search:
+        query += " AND (u.name LIKE ? OR u.username LIKE ? OR u.email LIKE ? OR u.phone LIKE ? OR u.inspector_id LIKE ?)"
+        term = f"%{search}%"
+        params.extend([term, term, term, term, term])
+    if role and role != 'ALL':
+        query += " AND u.role = ?"
+        params.append(role)
+    if status and status != 'ALL':
+        query += " AND u.status = ?"
+        params.append(status)
+
+    query += " ORDER BY u.id ASC"
+    cursor.execute(query, tuple(params))
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
 def reset_user_password(user_id, new_password, db_path=None):
     from werkzeug.security import generate_password_hash
     conn = get_db_connection(db_path)
@@ -250,6 +341,9 @@ def save_inspection(data, db_path=None):
     raw_loc = data.get("location_data")
     location_data = json.dumps(raw_loc) if isinstance(raw_loc, dict) else (raw_loc or "")
     inspector_id = data.get("inspector_id")
+    user_id = data.get("user_id")
+    performed_by = data.get("performed_by") or data.get("officer_notes") or "Field Inspection"
+    role = data.get("role") or "PUBLIC"
     
     cursor.execute("""
     INSERT INTO inspections (
@@ -258,8 +352,8 @@ def save_inspection(data, db_path=None):
         consumer_care, unit_sale_price, dimensions,
         compliance_score, overall_status, detected_issues,
         extracted_data, image_paths, evidence_image_path, officer_notes,
-        location_data, inspector_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        location_data, inspector_id, user_id, performed_by, role
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         timestamp,
         data.get("product_name", "Unknown Commodity"),
@@ -280,7 +374,10 @@ def save_inspection(data, db_path=None):
         data.get("evidence_image_path", ""),
         data.get("officer_notes", ""),
         location_data,
-        inspector_id
+        inspector_id,
+        user_id,
+        performed_by,
+        role
     ))
     inspection_id = cursor.lastrowid
     conn.commit()
@@ -291,9 +388,15 @@ def get_inspection(inspection_id, db_path=None):
     conn = get_db_connection(db_path)
     cursor = conn.cursor()
     cursor.execute("""
-    SELECT i.*, u.name as inspector_name, u.inspector_id as inspector_badge, u.department as inspector_dept
+    SELECT i.*, 
+           COALESCE(u.name, i.performed_by, 'Authorized Officer') as inspector_name, 
+           COALESCE(u.inspector_id, 'INSP') as inspector_badge, 
+           COALESCE(u.department, 'Legal Metrology') as inspector_dept,
+           usr.name as user_name,
+           usr.email as user_email
     FROM inspections i
     LEFT JOIN users u ON i.inspector_id = u.id
+    LEFT JOIN users usr ON i.user_id = usr.id
     WHERE i.id = ?
     """, (inspection_id,))
     row = cursor.fetchone()
@@ -314,30 +417,39 @@ def get_inspection(inspection_id, db_path=None):
         item["location_data"] = None
     return item
 
-def list_inspections(search=None, status=None, inspector_id=None, date_from=None, date_to=None, limit=50, offset=0, db_path=None):
+def list_inspections(search=None, status=None, inspector_id=None, user_id=None, role=None, date_from=None, date_to=None, limit=50, offset=0, db_path=None):
     conn = get_db_connection(db_path)
     cursor = conn.cursor()
     
     query = """
-    SELECT i.*, u.name as inspector_name, u.inspector_id as inspector_badge, u.department as inspector_dept
+    SELECT i.*, 
+           COALESCE(u.name, i.performed_by, 'Field Inspection') as inspector_name, 
+           COALESCE(u.inspector_id, '') as inspector_badge, 
+           COALESCE(u.department, 'Legal Metrology Enforcement') as inspector_dept
     FROM inspections i
-    LEFT JOIN users u ON i.inspector_id = u.id
+    LEFT JOIN users u ON (i.inspector_id = u.id OR i.user_id = u.id)
     WHERE 1=1
     """
     params = []
     
     if search:
-        query += " AND (i.product_name LIKE ? OR i.manufacturer LIKE ? OR i.country_of_origin LIKE ? OR i.id = ? OR u.name LIKE ? OR u.inspector_id LIKE ?)"
+        query += " AND (i.product_name LIKE ? OR i.manufacturer LIKE ? OR i.country_of_origin LIKE ? OR i.id = ? OR u.name LIKE ? OR u.inspector_id LIKE ? OR i.performed_by LIKE ?)"
         term = f"%{search}%"
-        params.extend([term, term, term, search if str(search).isdigit() else -1, term, term])
+        params.extend([term, term, term, search if str(search).isdigit() else -1, term, term, term])
         
     if status and status != "ALL":
         query += " AND i.overall_status = ?"
         params.append(status)
 
-    if inspector_id:
+    if user_id:
+        query += " AND (i.user_id = ? OR (i.inspector_id = ? AND i.role = 'USER'))"
+        params.extend([user_id, user_id])
+    elif inspector_id:
         query += " AND i.inspector_id = ?"
         params.append(inspector_id)
+    elif role:
+        query += " AND (i.role = ? OR i.role IS NULL)"
+        params.append(role)
 
     if date_from:
         query += " AND i.timestamp >= ?"
@@ -356,19 +468,25 @@ def list_inspections(search=None, status=None, inspector_id=None, date_from=None
     count_query = """
     SELECT COUNT(*) as total
     FROM inspections i
-    LEFT JOIN users u ON i.inspector_id = u.id
+    LEFT JOIN users u ON (i.inspector_id = u.id OR i.user_id = u.id)
     WHERE 1=1
     """
     count_params = []
     if search:
-        count_query += " AND (i.product_name LIKE ? OR i.manufacturer LIKE ? OR i.country_of_origin LIKE ? OR i.id = ? OR u.name LIKE ? OR u.inspector_id LIKE ?)"
-        count_params.extend([term, term, term, search if str(search).isdigit() else -1, term, term])
+        count_query += " AND (i.product_name LIKE ? OR i.manufacturer LIKE ? OR i.country_of_origin LIKE ? OR i.id = ? OR u.name LIKE ? OR u.inspector_id LIKE ? OR i.performed_by LIKE ?)"
+        count_params.extend([term, term, term, search if str(search).isdigit() else -1, term, term, term])
     if status and status != "ALL":
         count_query += " AND i.overall_status = ?"
         count_params.append(status)
-    if inspector_id:
+    if user_id:
+        count_query += " AND (i.user_id = ? OR (i.inspector_id = ? AND i.role = 'USER'))"
+        count_params.extend([user_id, user_id])
+    elif inspector_id:
         count_query += " AND i.inspector_id = ?"
         count_params.append(inspector_id)
+    elif role:
+        count_query += " AND (i.role = ? OR i.role IS NULL)"
+        count_params.append(role)
     if date_from:
         count_query += " AND i.timestamp >= ?"
         count_params.append(f"{date_from} 00:00:00")
@@ -398,15 +516,152 @@ def list_inspections(search=None, status=None, inspector_id=None, date_from=None
         
     return inspections, total_count
 
-def get_dashboard_metrics(inspector_id=None, db_path=None):
+# =========================================================
+# COMPLAINTS DATABASE OPERATIONS (CITIZEN GRIEVANCE REDRESSAL)
+# =========================================================
+def create_complaint(data, db_path=None):
+    conn = get_db_connection(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) as cnt FROM complaints")
+    count_row = cursor.fetchone()
+    next_num = (count_row["cnt"] if count_row else 0) + 1
+    complaint_no = f"CMP-2026-{next_num:04d}"
+
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    raw_violations = data.get("violations", [])
+    violations_json = json.dumps(raw_violations) if isinstance(raw_violations, (list, dict)) else (raw_violations or "[]")
+
+    cursor.execute("""
+    INSERT INTO complaints (
+        complaint_no, user_id, user_name, user_email, contact_number,
+        inspection_id, product_name, compliance_result, violations,
+        location_address, latitude, longitude, inspection_timestamp,
+        created_at, evidence_image_path, retailer_details, description,
+        status, admin_notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        complaint_no,
+        data.get("user_id"),
+        data.get("user_name", "Citizen"),
+        data.get("user_email", ""),
+        data.get("contact_number", ""),
+        data.get("inspection_id"),
+        data.get("product_name", "Packaged Commodity"),
+        data.get("compliance_result", "NON-COMPLIANT"),
+        violations_json,
+        data.get("location_address", ""),
+        data.get("latitude"),
+        data.get("longitude"),
+        data.get("inspection_timestamp", ""),
+        now_str,
+        data.get("evidence_image_path", ""),
+        data.get("retailer_details", ""),
+        data.get("description", ""),
+        data.get("status", "Submitted"),
+        data.get("admin_notes", "")
+    ))
+    complaint_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return {"id": complaint_id, "complaint_no": complaint_no}
+
+def get_complaint(complaint_id, db_path=None):
+    conn = get_db_connection(db_path)
+    cursor = conn.cursor()
+    if str(complaint_id).isdigit():
+        cursor.execute("SELECT * FROM complaints WHERE id = ?", (int(complaint_id),))
+    else:
+        cursor.execute("SELECT * FROM complaints WHERE complaint_no = ?", (str(complaint_id),))
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        return None
+    item = dict(row)
+    try:
+        item["violations"] = json.loads(item["violations"] or "[]")
+    except Exception:
+        item["violations"] = []
+    return item
+
+def list_complaints(user_id=None, status=None, search=None, limit=50, offset=0, db_path=None):
+    conn = get_db_connection(db_path)
+    cursor = conn.cursor()
+    query = "SELECT * FROM complaints WHERE 1=1"
+    params = []
+
+    if user_id:
+        query += " AND user_id = ?"
+        params.append(user_id)
+
+    if status and status != "ALL":
+        query += " AND status = ?"
+        params.append(status)
+
+    if search:
+        query += " AND (complaint_no LIKE ? OR product_name LIKE ? OR user_name LIKE ? OR user_email LIKE ? OR retailer_details LIKE ?)"
+        term = f"%{search}%"
+        params.extend([term, term, term, term, term])
+
+    query += " ORDER BY id DESC LIMIT ? OFFSET ?"
+    params.extend([limit, offset])
+
+    cursor.execute(query, tuple(params))
+    rows = cursor.fetchall()
+
+    count_query = "SELECT COUNT(*) as total FROM complaints WHERE 1=1"
+    count_params = []
+    if user_id:
+        count_query += " AND user_id = ?"
+        count_params.append(user_id)
+    if status and status != "ALL":
+        count_query += " AND status = ?"
+        count_params.append(status)
+    if search:
+        count_query += " AND (complaint_no LIKE ? OR product_name LIKE ? OR user_name LIKE ? OR user_email LIKE ? OR retailer_details LIKE ?)"
+        count_params.extend([term, term, term, term, term])
+
+    cursor.execute(count_query, tuple(count_params))
+    total_count = cursor.fetchone()["total"]
+    conn.close()
+
+    complaints = []
+    for r in rows:
+        item = dict(r)
+        try:
+            item["violations"] = json.loads(item["violations"] or "[]")
+        except Exception:
+            item["violations"] = []
+        complaints.append(item)
+    return complaints, total_count
+
+def update_complaint_status(complaint_id, status, admin_notes=None, db_path=None):
+    conn = get_db_connection(db_path)
+    cursor = conn.cursor()
+    if admin_notes is not None:
+        cursor.execute("UPDATE complaints SET status = ?, admin_notes = ? WHERE id = ?", (status, admin_notes, complaint_id))
+    else:
+        cursor.execute("UPDATE complaints SET status = ? WHERE id = ?", (status, complaint_id))
+    updated = cursor.rowcount > 0
+    conn.commit()
+    conn.close()
+    return updated
+
+def get_dashboard_metrics(inspector_id=None, user_id=None, role=None, db_path=None):
     conn = get_db_connection(db_path)
     cursor = conn.cursor()
 
     where_clause = " WHERE 1=1"
     params = []
-    if inspector_id:
+    if user_id:
+        where_clause += " AND (user_id = ? OR (inspector_id = ? AND role = 'USER'))"
+        params.extend([user_id, user_id])
+    elif inspector_id:
         where_clause += " AND inspector_id = ?"
         params.append(inspector_id)
+    elif role:
+        where_clause += " AND (role = ? OR role IS NULL)"
+        params.append(role)
     
     cursor.execute(f"SELECT COUNT(*) as total FROM inspections{where_clause}", tuple(params))
     total = cursor.fetchone()["total"]
@@ -517,11 +772,12 @@ def get_dashboard_metrics(inspector_id=None, db_path=None):
     top_cities = sorted(city_counts.items(), key=lambda x: x[1], reverse=True)[:5]
 
     # Recent inspections
+    joined_where = where_clause.replace("inspector_id", "i.inspector_id").replace("user_id", "i.user_id").replace("role", "i.role")
     cursor.execute(f"""
     SELECT i.*, u.name as inspector_name, u.inspector_id as inspector_badge
     FROM inspections i
     LEFT JOIN users u ON i.inspector_id = u.id
-    {where_clause}
+    {joined_where}
     ORDER BY i.id DESC LIMIT 5
     """, tuple(params))
     recent_rows = cursor.fetchall()

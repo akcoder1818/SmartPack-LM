@@ -9,13 +9,15 @@
         <div>
             <div class="d-flex align-items-center gap-2">
                 <span class="badge bg-navy text-white fw-bold">
-                    {% if current_user.role == 'ADMIN' %}Central Audit Log{% else %}Inspector Field Roster{% endif %}
+                    {% if current_user and current_user.role == 'ADMIN' %}Central Audit Log{% elif current_user and current_user.role == 'USER' %}Citizen Inspection Vault{% else %}Inspector Field Roster{% endif %}
                 </span>
                 <span class="text-muted small">Total Audits: {{ total_count }}</span>
             </div>
             <h2 class="fw-bold text-navy mb-0">
-                {% if current_user.role == 'ADMIN' %}
+                {% if current_user and current_user.role == 'ADMIN' %}
                     National Packaged Commodities Inspection History
+                {% elif current_user and current_user.role == 'USER' %}
+                    My Scanned Commodities &amp; Reports
                 {% else %}
                     My Inspection Records &amp; Verifications
                 {% endif %}
@@ -56,7 +58,7 @@
                 </div>
 
                 <!-- Inspector Filter (Admin Only) -->
-                {% if current_user.role == 'ADMIN' and inspectors_list %}
+                {% if current_user and current_user.role == 'ADMIN' and inspectors_list %}
                 <div class="col-md-3">
                     <select name="inspector_id" class="form-select form-select-sm">
                         <option value="">All Field Inspectors</option>
@@ -98,8 +100,8 @@
                             <th class="ps-3">ID / Ref</th>
                             <th>Date &amp; Time</th>
                             <th>Commodity / Brand</th>
-                            {% if current_user.role == 'ADMIN' %}
-                            <th>Inspector</th>
+                            {% if current_user and current_user.role == 'ADMIN' %}
+                            <th>Inspector / Citizen</th>
                             {% endif %}
                             <th>Manufacturer</th>
                             <th class="text-center">Score</th>
@@ -122,13 +124,13 @@
                                     <div class="fw-semibold text-dark">{{ item.product_name }}</div>
                                     <small class="text-muted">{{ item.net_quantity }} &bull; {{ item.mrp }}</small>
                                 </td>
-                                {% if current_user.role == 'ADMIN' %}
+                                {% if current_user and current_user.role == 'ADMIN' %}
                                 <td>
                                     {% if item.inspector_name %}
                                         <div class="small fw-semibold text-dark">{{ item.inspector_name }}</div>
-                                        <span class="badge bg-light text-secondary border font-monospace small">{{ item.inspector_badge or 'OFFICER' }}</span>
+                                        <span class="badge bg-light text-secondary border font-monospace small">{{ item.inspector_badge or item.role or 'OFFICER' }}</span>
                                     {% else %}
-                                        <span class="text-muted small fst-italic">Field Officer</span>
+                                        <span class="text-muted small fst-italic">{{ item.performed_by or 'Field Officer' }}</span>
                                     {% endif %}
                                 </td>
                                 {% endif %}

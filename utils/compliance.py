@@ -218,34 +218,57 @@ def assess_compliance(extracted_fields, custom_rules=None):
         if is_required or extracted_value:
             total_weight += weight
 
-        rule_evaluations.append(eval_item)
+    # Count legitimately verified declarations
+    verified_count = sum(1 for r in rule_evaluations if r.get("status") == "PASS")
+    detected_count = sum(1 for r in rule_evaluations if r.get("extracted_value"))
 
     # Compute overall compliance score
-    if total_weight > 0:
+    if total_weight > 0 and detected_count > 0:
         compliance_score = round((earned_weight / total_weight) * 100.0, 1)
     else:
         compliance_score = 0.0
 
     # Determine overall status classification
     critical_fails = any(iss.get("severity") == "CRITICAL" for iss in detected_issues)
-    
-    if compliance_score >= 85.0 and not critical_fails:
+    is_insufficient = (detected_count == 0 or (detected_count == 1 and not any(r.get("field") == "mrp" and r.get("status") == "PASS" for r in rule_evaluations)))
+
+    if is_insufficient:
+        overall_status = "NON-COMPLIANT"
+        compliance_score = 0.0
+        summary_text = (
+            "Unable to Verify — Insufficient / Invalid Product Evidence: "
+            "Mandatory statutory declarations under Rule 6(1) could not be detected on the package image. "
+            "Please ensure a clear, well-lit photograph of the statutory declaration label is captured."
+        )
+    elif compliance_score >= 85.0 and not critical_fails:
         overall_status = "COMPLIANT"
+        summary_text = (
+            f"Assessed {len(rule_evaluations)} statutory rules. "
+            f"Calculated Legal Metrology Compliance Index: {compliance_score}% ({overall_status}). "
+            f"Detected {len(detected_issues)} discrepancies requiring inspection officer review."
+        )
     elif compliance_score >= 60.0 and not critical_fails:
         overall_status = "NEEDS REVIEW"
+        summary_text = (
+            f"Assessed {len(rule_evaluations)} statutory rules. "
+            f"Calculated Legal Metrology Compliance Index: {compliance_score}% ({overall_status}). "
+            f"Detected {len(detected_issues)} discrepancies requiring inspection officer review."
+        )
     else:
         overall_status = "NON-COMPLIANT"
-
-    summary_text = (
-        f"Assessed {len(rule_evaluations)} statutory rules. "
-        f"Calculated Legal Metrology Compliance Index: {compliance_score}% ({overall_status}). "
-        f"Detected {len(detected_issues)} discrepancies requiring inspection officer review."
-    )
+        summary_text = (
+            f"Assessed {len(rule_evaluations)} statutory rules. "
+            f"Calculated Legal Metrology Compliance Index: {compliance_score}% ({overall_status}). "
+            f"Detected {len(detected_issues)} discrepancies requiring inspection officer review."
+        )
 
     return {
         "overall_status": overall_status,
         "compliance_score": compliance_score,
         "rule_evaluations": rule_evaluations,
         "detected_issues": detected_issues,
-        "summary": summary_text
+        "summary": summary_text,
+        "is_insufficient_evidence": is_insufficient,
+        "verified_count": verified_count,
+        "detected_count": detected_count
     }

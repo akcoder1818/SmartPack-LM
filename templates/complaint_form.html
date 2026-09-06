@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Register Grievance / File Complaint | SmartPack-LM{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <!-- Header Card -->
+            <div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
+                <div class="bg-navy p-4 text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-danger text-uppercase px-2.5 py-1 fw-bold">Citizen Grievance</span>
+                            <span class="badge bg-white bg-opacity-15 text-white font-monospace">Inspection #SP-LM-{{ "%04d"|format(inspection.id) }}</span>
+                        </div>
+                        <h3 class="fw-bold mb-0">Statutory Non-Compliance Grievance</h3>
+                        <small class="text-white-50">Under Legal Metrology Act, 2009 &amp; Packaged Commodities Rules, 2011</small>
+                    </div>
+                    <a href="{{ url_for('view_result', inspection_id=inspection.id) }}" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                        <i class="bi bi-arrow-left me-1"></i> Return to Scan Result
+                    </a>
+                </div>
+            </div>
+
+            <!-- Pre-filled Inspection Context Alert -->
+            <div class="card border-0 shadow-sm mb-4 rounded-3">
+                <div class="card-header bg-light py-3 border-bottom">
+                    <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-primary fs-5"></i>
+                        <span>Auto-Inherited Inspection Evidence</span>
+                    </h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-2 border">
+                                <small class="text-muted text-uppercase d-block fw-semibold mb-1">Product Details</small>
+                                <h6 class="fw-bold text-dark mb-1">{{ inspection.product_name }}</h6>
+                                <div class="small text-muted mb-1"><i class="bi bi-building me-1"></i>Manufacturer: {{ inspection.manufacturer }}</div>
+                                <div class="small text-muted"><i class="bi bi-clock-history me-1"></i>Scan Time: {{ inspection.timestamp }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-2 border">
+                                <small class="text-muted text-uppercase d-block fw-semibold mb-1">Compliance Assessment</small>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="badge {% if inspection.overall_status == 'COMPLIANT' %}bg-success{% elif inspection.overall_status == 'NEEDS REVIEW' %}bg-warning text-dark{% else %}bg-danger{% endif %} px-2.5 py-1 fw-bold">
+                                        {{ inspection.overall_status }}
+                                    </span>
+                                    <span class="fw-bold text-dark font-monospace">Score: {{ inspection.compliance_score }}%</span>
+                                </div>
+                                <div class="small text-danger fw-semibold">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ inspection.detected_issues|length }} statutory issue(s) detected
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detected Violations List -->
+                        {% if inspection.detected_issues %}
+                        <div class="col-12">
+                            <div class="p-3 rounded-2 border border-danger border-opacity-25 bg-danger bg-opacity-10">
+                                <div class="fw-bold text-danger small mb-2 text-uppercase">
+                                    <i class="bi bi-exclamation-octagon-fill me-1"></i> Flagged Legal Metrology Violations:
+                                </div>
+                                <ul class="mb-0 ps-3 small text-dark">
+                                    {% for iss in inspection.detected_issues %}
+                                    <li class="mb-1">
+                                        <strong>{{ iss.title }}:</strong> {{ iss.description }}
+                                        <span class="badge bg-danger bg-opacity-75 text-white ms-1">{{ iss.rule_reference }}</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Location Preview (if available) -->
+                        {% if inspection.location_data and inspection.location_data.latitude %}
+                        <div class="col-12">
+                            <div class="p-2.5 bg-light rounded-2 border small d-flex align-items-center gap-2">
+                                <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
+                                <div>
+                                    <strong class="text-dark">Detected GPS Location:</strong>
+                                    <span class="text-muted ms-1">{{ inspection.location_data.address or (inspection.location_data.latitude ~ ', ' ~ inspection.location_data.longitude) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grievance Submission Form -->
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
+                        <i class="bi bi-pencil-fill text-primary"></i>
+                        <span>Enter Retailer &amp; Complaint Details</span>
+                    </h6>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('new_complaint') }}">
+                        <input type="hidden" name="inspection_id" value="{{ inspection.id }}">
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-dark small">
+                                    <i class="bi bi-person text-primary me-1"></i> Complainant Name
+                                </label>
+                                <input type="text" name="user_name" class="form-control" value="{{ current_user.name }}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-dark small">
+                                    <i class="bi bi-envelope text-primary me-1"></i> Complainant Email
+                                </label>
+                                <input type="email" name="user_email" class="form-control" value="{{ current_user.email }}" readonly>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark small">
+                                <i class="bi bi-telephone text-primary me-1"></i> Contact Phone Number
+                            </label>
+                            <input type="tel" name="contact_number" class="form-control" placeholder="10-digit mobile number" value="{{ current_user.phone or '' }}">
+                            <div class="form-text small text-muted">Legal Metrology field officers may contact you to verify sample details.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark small">
+                                <i class="bi bi-shop text-primary me-1"></i> Retailer / Shop Name &amp; Address <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="retailer_details" class="form-control" placeholder="e.g. Apex Supermarket, MG Road, Store #14" required>
+                            <div class="form-text small text-muted">Identify where the commodity was purchased or observed.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-dark small">
+                                <i class="bi bi-card-text text-primary me-1"></i> Complaint Description / Additional Remarks <span class="text-danger">*</span>
+                            </label>
+                            <textarea name="description" class="form-control" rows="4" placeholder="Describe the non-compliance observed (e.g. Overcharging above printed MRP, missing packaging date, sticker over MRP, etc.)..." required></textarea>
+                        </div>
+
+                        <div class="p-3 bg-light rounded-3 border mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="declarationCheck" required>
+                                <label class="form-check-label small text-muted" for="declarationCheck">
+                                    I hereby declare that the details furnished above and the packaging image evidence submitted are true to the best of my knowledge and belief.
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('view_result', inspection_id=inspection.id) }}" class="btn btn-outline-secondary px-4 rounded-pill">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger px-4 py-2.5 rounded-pill fw-bold shadow-sm d-flex align-items-center gap-2">
+                                <i class="bi bi-send-fill"></i>
+                                <span>Submit Statutory Grievance</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

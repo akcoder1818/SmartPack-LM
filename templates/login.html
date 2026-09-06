@@ -17,6 +17,20 @@
                     <span class="badge bg-warning text-dark px-3 py-1 font-monospace mt-2">SIH26034 AUTH GATEWAY</span>
                 </div>
 
+                <!-- Tabbed Navigation: Official vs Citizen -->
+                <ul class="nav nav-tabs nav-fill bg-light border-bottom" id="loginTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active py-3 fw-bold small text-uppercase" id="official-tab" data-bs-toggle="tab" data-bs-target="#officialPane" type="button" role="tab">
+                            <i class="bi bi-shield-lock-fill me-1 text-warning"></i> LM Official / Admin
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link py-3 fw-bold small text-uppercase text-dark" id="citizen-tab" data-bs-toggle="tab" data-bs-target="#citizenPane" type="button" role="tab">
+                            <i class="bi bi-person-heart me-1 text-primary"></i> Citizen / Consumer
+                        </button>
+                    </li>
+                </ul>
+
                 <!-- Form Body -->
                 <div class="card-body p-4 p-md-5 bg-white">
                     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -30,51 +44,101 @@
                         {% endif %}
                     {% endwith %}
 
-                    <form method="POST" action="{{ url_for('login') }}">
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold text-dark small">
-                                <i class="bi bi-person-badge-fill text-primary me-1"></i> Username or Email
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
-                                <input type="text" name="username" class="form-control" placeholder="admin or inspector username" required autofocus autocomplete="username">
+                    <div class="tab-content" id="loginTabsContent">
+                        <!-- Official Login Pane -->
+                        <div class="tab-pane fade show active" id="officialPane" role="tabpanel">
+                            <form method="POST" action="{{ url_for('login') }}">
+                                <input type="hidden" name="login_type" value="official">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-dark small">
+                                        <i class="bi bi-person-badge-fill text-primary me-1"></i> Official Badge / Username
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
+                                        <input type="text" name="username" class="form-control" placeholder="admin or inspector username" required autofocus autocomplete="username">
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold text-dark small d-flex justify-content-between align-items-center">
+                                        <span><i class="bi bi-key-fill text-primary me-1"></i> Official Password</span>
+                                        <small class="text-muted">Encrypted Session</small>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-lock"></i></span>
+                                        <input type="password" name="password" id="officialPasswordInput" class="form-control" placeholder="••••••••••••" required autocomplete="current-password">
+                                        <button class="btn btn-outline-secondary toggle-pwd-btn" type="button" data-target="officialPasswordInput" title="Toggle password visibility">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-navy btn-lg py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                                        <i class="bi bi-shield-check text-warning fs-5"></i>
+                                        <span>Authenticate as Official</span>
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Official Notice -->
+                            <div class="mt-4 p-3 rounded-3 bg-light border">
+                                <div class="d-flex gap-2 align-items-start">
+                                    <i class="bi bi-shield-check text-success fs-5 mt-0.5"></i>
+                                    <div class="small text-muted">
+                                        <strong class="text-dark d-block">Authorized LM Enforcement</strong>
+                                        Default administrator login: <code>admin</code> / <code>Admin@SIH2026</code>. Inspector accounts are provisioned by the Administrator.
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold text-dark small d-flex justify-content-between align-items-center">
-                                <span><i class="bi bi-key-fill text-primary me-1"></i> Password</span>
-                                <small class="text-muted">Encrypted Session</small>
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light text-muted"><i class="bi bi-lock"></i></span>
-                                <input type="password" name="password" id="passwordInput" class="form-control" placeholder="••••••••••••" required autocomplete="current-password">
-                                <button class="btn btn-outline-secondary" type="button" id="togglePasswordBtn" title="Toggle password visibility">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </div>
-                        </div>
+                        <!-- Citizen Login Pane -->
+                        <div class="tab-pane fade" id="citizenPane" role="tabpanel">
+                            <form method="POST" action="{{ url_for('login') }}">
+                                <input type="hidden" name="login_type" value="citizen">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-dark small">
+                                        <i class="bi bi-envelope-fill text-primary me-1"></i> Email or Username
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-person-circle"></i></span>
+                                        <input type="text" name="username" class="form-control" placeholder="Enter your email or username" required autocomplete="username">
+                                    </div>
+                                </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-navy btn-lg py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
-                                <i class="bi bi-box-arrow-in-right text-warning fs-5"></i>
-                                <span>Authenticate &amp; Enter Portal</span>
-                            </button>
-                        </div>
-                    </form>
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold text-dark small d-flex justify-content-between align-items-center">
+                                        <span><i class="bi bi-key-fill text-primary me-1"></i> Password</span>
+                                        <small class="text-muted">Encrypted Session</small>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-lock"></i></span>
+                                        <input type="password" name="password" id="citizenPasswordInput" class="form-control" placeholder="••••••••••••" required autocomplete="current-password">
+                                        <button class="btn btn-outline-secondary toggle-pwd-btn" type="button" data-target="citizenPasswordInput" title="Toggle password visibility">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
 
-                    <!-- Security Notice / Default Credential Instructions -->
-                    <div class="mt-4 p-3 rounded-3 bg-light border">
-                        <div class="d-flex gap-2 align-items-start">
-                            <i class="bi bi-shield-check text-success fs-5 mt-0.5"></i>
-                            <div class="small text-muted">
-                                <strong class="text-dark d-block">Authorized Access Only</strong>
-                                Passwords are encrypted with SHA-256 PBKDF2 hashing. Inactive accounts are blocked. Default administrator login: <code>admin</code> / <code>Admin@SIH2026</code> (or <code>$SMARTPACK_ADMIN_PASSWORD</code>).
-                            </div>
+                                <div class="d-grid gap-2 mb-3">
+                                    <button type="submit" class="btn btn-primary btn-lg py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                                        <i class="bi bi-box-arrow-in-right fs-5"></i>
+                                        <span>Sign In as Citizen</span>
+                                    </button>
+                                </div>
+
+                                <div class="p-3 bg-light rounded-3 text-center border">
+                                    <div class="small text-muted mb-2">New to SmartPack-LM? Create an account to track your scans &amp; grievances:</div>
+                                    <a href="{{ url_for('register') }}" class="btn btn-sm btn-outline-primary px-4 rounded-pill fw-semibold">
+                                        <i class="bi bi-person-plus-fill me-1"></i> Register Free Citizen Account
+                                    </a>
+                                </div>
+                            </form>
                         </div>
                     </div>
 
-                    <div class="text-center mt-3">
+                    <div class="text-center mt-4 pt-2 border-top">
                         <a href="{{ url_for('index') }}" class="small text-decoration-none text-muted">
                             <i class="bi bi-arrow-left me-1"></i> Return to Public Scan Area
                         </a>
@@ -87,15 +151,17 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const toggleBtn = document.getElementById('togglePasswordBtn');
-    const pwdInput = document.getElementById('passwordInput');
-    if (toggleBtn && pwdInput) {
-        toggleBtn.addEventListener('click', function () {
-            const isPassword = pwdInput.type === 'password';
-            pwdInput.type = isPassword ? 'text' : 'password';
-            this.innerHTML = isPassword ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+    document.querySelectorAll('.toggle-pwd-btn').forEach(function(btn) {
+        btn.addEventListener('click', function () {
+            const targetId = this.getAttribute('data-target');
+            const pwdInput = document.getElementById(targetId);
+            if (pwdInput) {
+                const isPassword = pwdInput.type === 'password';
+                pwdInput.type = isPassword ? 'text' : 'password';
+                this.innerHTML = isPassword ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+            }
         });
-    }
+    });
 });
 </script>
 {% endblock %}

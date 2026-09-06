@@ -1,62 +1,197 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t('nav_rules') }} | SmartPack-LM{% endblock %}
+{% block title %}Legal Metrology Rules, 2011 — Compliance Catalog | SmartPack-LM{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4">
-    <!-- Header -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-            <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-warning text-dark fw-bold">REGULATORY MATRIX</span>
-                <span class="text-muted small">{{ t('department_name') }}</span>
+<div class="container-fluid px-4 py-3">
+    <!-- Header Banner -->
+    <div class="card border-0 shadow-sm mb-4 bg-navy text-white rounded-3 overflow-hidden">
+        <div class="card-body p-4 p-lg-5">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-warning text-dark fw-bold px-3 py-1">STATUTORY FRAMEWORK</span>
+                        <span class="text-white-50 small">Legal Metrology Act, 2009 &bull; Rule 6(1) Standards</span>
+                    </div>
+                    <h2 class="display-6 fw-bold mb-2">Legal Metrology (Packaged Commodities) Rules, 2011</h2>
+                    <p class="lead text-light-slate mb-0" style="max-width: 800px; font-size: 1.05rem;">
+                        Official compliance catalog detailing mandatory declarations for pre-packaged commodities sold across India. Every packaged commodity must legibly disclose these statutory specifications to protect consumer rights and ensure fair trade practices.
+                    </p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('index') }}" class="btn btn-warning text-dark fw-bold px-3 py-2 rounded-pill shadow-xs d-flex align-items-center gap-2">
+                        <i class="bi bi-qr-code-scan"></i>
+                        <span>Start Inspection</span>
+                    </a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light px-3 py-2 rounded-pill d-flex align-items-center gap-2">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Audit Dashboard</span>
+                    </a>
+                </div>
             </div>
-            <h2 class="fw-bold text-navy mb-0">{{ t('rules_catalog_title') }}</h2>
-            <p class="text-muted small mb-0">{{ t('rules_catalog_sub') }}</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ url_for('index') }}" class="btn btn-navy d-flex align-items-center gap-1 shadow-sm">
-                <i class="bi bi-qr-code-scan"></i>
-                <span>{{ t('nav_scan') }}</span>
-            </a>
         </div>
     </div>
 
-    <!-- Rules Cards Grid -->
+    <!-- Quick Stats Bar -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="p-3 bg-white rounded-3 shadow-xs border text-center">
+                <div class="text-muted small text-uppercase fw-semibold">Mandatory Declarations</div>
+                <div class="fs-3 fw-bold text-navy">7 Core Rules</div>
+                <small class="text-success"><i class="bi bi-shield-check me-1"></i>Rule 6(1)(a) to 6(1)(g)</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 bg-white rounded-3 shadow-xs border text-center">
+                <div class="text-muted small text-uppercase fw-semibold">Conditional Declarations</div>
+                <div class="fs-3 fw-bold text-navy">3 Provisos</div>
+                <small class="text-secondary"><i class="bi bi-info-circle me-1"></i>USP, Expiry &amp; Dimensions</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 bg-white rounded-3 shadow-xs border text-center">
+                <div class="text-muted small text-uppercase fw-semibold">Standard Measuring Units</div>
+                <div class="fs-3 fw-bold text-navy">SI Metric Only</div>
+                <small class="text-primary"><i class="bi bi-check-all me-1"></i>Rule 11 Compliance</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 bg-white rounded-3 shadow-xs border text-center">
+                <div class="text-muted small text-uppercase fw-semibold">Statutory Authority</div>
+                <div class="fs-3 fw-bold text-navy">Govt of India</div>
+                <small class="text-danger"><i class="bi bi-award me-1"></i>Dept of Consumer Affairs</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Rules Section -->
     <div class="row g-4 mb-4">
         {% for r in rules %}
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100 rule-card">
+            <div class="card border-0 shadow-sm h-100 rounded-3 rule-detail-card overflow-hidden">
+                <!-- Card Header -->
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge font-monospace bg-navy text-white">{{ r.id }}</span>
+                        <span class="badge bg-navy text-white font-monospace">{{ r.id }}</span>
                         <span class="badge {% if r.severity == 'CRITICAL' %}bg-danger{% elif r.severity == 'HIGH' %}bg-danger bg-opacity-75{% elif r.severity == 'MEDIUM' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
                             {{ r.severity }}
                         </span>
                     </div>
-                    {% if r.required %}
-                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-semibold">{{ t('badge_mandatory') }}</span>
-                    {% else %}
-                        <span class="badge bg-light text-muted border">{{ t('badge_conditional') }}</span>
-                    {% endif %}
+                    <div>
+                        {% if r.required %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-semibold px-2.5 py-1">
+                                <i class="bi bi-asterisk me-1"></i>Mandatory
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary border px-2.5 py-1">
+                                Conditional / Where Applicable
+                            </span>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="card-body p-4">
-                    <h5 class="fw-bold text-dark mb-2">{{ r.title }}</h5>
-                    <p class="text-secondary small mb-3">{{ r.description }}</p>
 
-                    <div class="p-3 bg-light rounded-3 mb-3 small">
-                        <div class="fw-bold text-navy mb-1"><i class="bi bi-shield-check me-1 text-success"></i>{{ t('guidance_title') }}</div>
-                        <div class="text-muted">{{ r.guidance }}</div>
+                <!-- Card Body -->
+                <div class="card-body p-4">
+                    <!-- Rule Title & Reference -->
+                    <div class="mb-3">
+                        <span class="text-primary fw-bold small text-uppercase d-block mb-1">
+                            <i class="bi bi-bookmark-fill me-1"></i>{{ r.rule_reference }}
+                        </span>
+                        <h4 class="fw-bold text-dark mb-2">{{ r.title }}</h4>
+                        <div class="badge bg-light text-secondary border font-monospace small">
+                            Target Field: <code>{{ r.field }}</code>
+                        </div>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center small text-muted border-top pt-3">
-                        <span><i class="bi bi-bookmark-fill text-primary me-1"></i><strong>{{ t('reference_label') }}</strong> {{ r.rule_reference }}</span>
-                        <span><i class="bi bi-gear-fill text-secondary me-1"></i>{{ t('field_label') }} <code>{{ r.field }}</code></span>
+                    <!-- Statutory Requirement -->
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-navy mb-1 small text-uppercase">
+                            <i class="bi bi-file-earmark-text text-primary me-1"></i>Statutory Requirement
+                        </h6>
+                        <p class="text-secondary small mb-0 bg-light p-3 rounded-2 border-start border-3 border-primary">
+                            {{ r.description }}
+                        </p>
+                    </div>
+
+                    <!-- What the Inspector Should Verify -->
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-navy mb-1 small text-uppercase">
+                            <i class="bi bi-search text-warning me-1"></i>What the Inspector Should Verify
+                        </h6>
+                        <div class="p-2.5 bg-light rounded-2 small text-dark">
+                            <div class="mb-1"><i class="bi bi-check2 text-success me-1"></i><strong>Guidance:</strong> {{ r.guidance }}</div>
+                            {% if r.validation_criteria %}
+                                <div class="mt-2 text-muted small">
+                                    {% if r.validation_criteria.keywords %}
+                                        <strong>Keywords searched:</strong> 
+                                        {% for kw in r.validation_criteria.keywords[:6] %}
+                                            <span class="badge bg-white text-dark border me-1 mb-1">{{ kw }}</span>
+                                        {% endfor %}
+                                    {% endif %}
+                                    {% if r.validation_criteria.valid_units %}
+                                        <br><strong>Approved Metric Units:</strong> 
+                                        {% for u in r.validation_criteria.valid_units[:8] %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle me-1 mb-1">{{ u }}</span>
+                                        {% endfor %}
+                                    {% endif %}
+                                    {% if r.validation_criteria.non_standard_units %}
+                                        <br><strong>Non-Standard / Prohibited Units:</strong> 
+                                        {% for nsu in r.validation_criteria.non_standard_units %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle me-1 mb-1">{{ nsu }}</span>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Compliance Meaning vs Violation Explanation -->
+                    <div class="row g-2 pt-2 border-top">
+                        <div class="col-sm-6">
+                            <div class="p-2.5 rounded-2 bg-success bg-opacity-10 border border-success border-opacity-25 h-100 small">
+                                <div class="fw-bold text-success mb-1">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Compliance Meaning
+                                </div>
+                                <div class="text-dark small">
+                                    Declaration is clearly visible, meets font height/legibility standards, and contains complete statutory details.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="p-2.5 rounded-2 bg-danger bg-opacity-10 border border-danger border-opacity-25 h-100 small">
+                                <div class="fw-bold text-danger mb-1">
+                                    <i class="bi bi-x-circle-fill me-1"></i>Violation Explanation
+                                </div>
+                                <div class="text-dark small">
+                                    Absence, illegibility, or non-standard formulation constitutes an offence under Section 36 of Legal Metrology Act, 2009.
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         {% endfor %}
+    </div>
+
+    <!-- Statutory Penalties Notice -->
+    <div class="card border-0 shadow-sm bg-light mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-start gap-3">
+                <i class="bi bi-shield-exclamation text-warning fs-2"></i>
+                <div>
+                    <h5 class="fw-bold text-navy mb-1">Enforcement &amp; Legal Metrology Act, 2009 Provisions</h5>
+                    <p class="small text-muted mb-2">
+                        Under Section 36(1) of the Legal Metrology Act, 2009, whoever manufactures, packs, imports, sells, distributes, delivers, or offers for sale any pre-packaged commodity which does not conform to the declarations under Rule 6(1) shall be punished with fine up to ₹25,000 for the first offence, up to ₹50,000 for the second offence, and up to ₹1,00,000 or imprisonment for subsequent offences.
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 small">
+                        <span class="badge bg-white text-secondary border">Section 36(1) Penalty for non-standard packages</span>
+                        <span class="badge bg-white text-secondary border">Rule 11 Unit Standardization</span>
+                        <span class="badge bg-white text-secondary border">Rule 6(2) Consumer Grievance Mandatory Channels</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

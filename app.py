@@ -16,8 +16,9 @@ from flask import (
 from utils.database import (
     init_db, save_inspection, get_inspection,
     list_inspections, get_dashboard_metrics, delete_inspection,
-    authenticate_user, create_user, list_inspectors,
-    update_user_status, reset_user_password, get_user_by_id
+    authenticate_user, create_user, list_inspectors, list_users,
+    update_user_status, reset_user_password, get_user_by_id,
+    create_complaint, get_complaint, list_complaints, update_complaint_status
 )
 from utils.auth import get_current_user, login_required, admin_required
 from utils.ocr import run_ocr_pipeline
@@ -206,9 +207,33 @@ def analyze():
         },
         "evidence_image_path": evidence_path,
         "officer_notes": officer_notes,
-        "location_data": None,
-        "inspector_id": session.get('user_id')
+        "location_data": None
     }
+
+    # Determine user identity and role from session
+    curr_user = get_current_user()
+    if curr_user:
+        user_role = curr_user.get('role', 'PUBLIC')
+        user_display = curr_user.get('name') or curr_user.get('username') or 'Authenticated User'
+        inspection_payload["role"] = user_role
+        inspection_payload["performed_by"] = user_display
+        if user_role == 'INSPECTOR':
+            inspection_payload["inspector_id"] = curr_user['id']
+            inspection_payload["user_id"] = None
+        elif user_role == 'ADMIN':
+            inspection_payload["inspector_id"] = curr_user['id']
+            inspection_payload["user_id"] = None
+        elif user_role == 'USER':
+            inspection_payload["inspector_id"] = None
+            inspection_payload["user_id"] = curr_user['id']
+        else:
+            inspection_payload["inspector_id"] = None
+            inspection_payload["user_id"] = curr_user['id']
+    else:
+        inspection_payload["role"] = "PUBLIC"
+        inspection_payload["performed_by"] = "Public / Unauthenticated Citizen"
+        inspection_payload["inspector_id"] = None
+        inspection_payload["user_id"] = None
 
     # Safely parse inspection location data if provided
     raw_location = request.form.get('location_data')
@@ -303,6 +328,54 @@ def logout():
     flash("You have been signed out successfully.", "info")
     return redirect(url_for('login'))
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """Citizen / Consumer Registration Portal."""
+    if session.get('user_id') and get_current_user():
+        return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        username = request.form.get('username', '').strip().lower()
+        email = request.form.get('email', '').strip().lower()
+        phone = request.form.get('phone', '').strip()
+        password = request.form.get('password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
+
+        form_data = {'name': name, 'username': username, 'email': email, 'phone': phone}
+
+        if not (name and username and email and password):
+            flash("Please fill in all mandatory fields.", "warning")
+            return render_template('register.html', form_data=form_data)
+
+        if len(password) < 6:
+            flash("Password must be at least 6 characters long.", "warning")
+            return render_template('register.html', form_data=form_data)
+
+        if password != confirm_password:
+            flash("Passwords do not match. Please verify and re-enter.", "warning")
+            return render_template('register.html', form_data=form_data)
+
+        # Create user with role='USER'
+        result = create_user(
+            name=name,
+            username=username,
+            email=email,
+            phone=phone,
+            password=password,
+            role='USER',
+            department='Consumer / Citizen'
+        )
+
+        if result.get('success'):
+            flash("Your citizen account has been successfully created! Please sign in.", "success")
+            return redirect(url_for('login'))
+        else:
+            flash(f"Registration failed: {result.get('error', 'Username or email already exists.')}", "danger")
+            return render_template('register.html', form_data=form_data)
+
+    return render_template('register.html', form_data={})
+
 # ==============================================================================
 # DASHBOARD & INSPECTION HISTORY (PARTS 3, 4, 5, 6)
 # ==============================================================================
@@ -312,9 +385,18 @@ def dashboard():
     """GovTech Compliance Analytics Dashboard & Audit Trail."""
     current_user = get_current_user()
     inspector_id = None
-    if current_user and current_user['role'] == 'INSPECTOR':
-        # Inspector sees only their own inspections on the dashboard
-        inspector_id = current_user['id']
+    user_id = None
+    role_filter = None
+
+    if current_user:
+        if current_user['role'] == 'INSPECTOR':
+            inspector_id = current_user['id']
+        elif current_user['role'] == 'USER':
+            user_id = current_user['id']
+        elif current_user['role'] == 'ADMIN':
+            pass
+    else:
+        role_filter = 'PUBLIC'
 
     search_query = request.args.get('search', '').strip()
     status_filter = request.args.get('status', 'ALL').strip()
@@ -326,11 +408,13 @@ def dashboard():
         search=search_query if search_query else None,
         status=status_filter if status_filter != 'ALL' else None,
         inspector_id=inspector_id,
+        user_id=user_id,
+        role=role_filter,
         limit=per_page,
         offset=offset
     )
 
-    metrics = get_dashboard_metrics(inspector_id=inspector_id)
+    metrics = get_dashboard_metrics(inspector_id=inspector_id, user_id=user_id, role=role_filter)
 
     return render_template(
         'dashboard.html',
@@ -355,21 +439,34 @@ def inspection_history():
     per_page = 20
     offset = (page - 1) * per_page
 
-    # Inspector filter: if admin, allow querying by specific inspector; if inspector, restrict to self
+    # Role-based inspection access control:
+    # ADMIN -> views all inspections (can optionally filter by specific inspector)
+    # INSPECTOR -> views only their own inspections (inspector_id)
+    # USER -> views only their own inspections (user_id)
+    # Unauthenticated / Public -> sees only public/demo inspections
     inspectors_list = []
-    if current_user and current_user['role'] == 'ADMIN':
-        inspectors_list = list_inspectors()
-        raw_inspector_param = request.args.get('inspector_id', '').strip()
-        inspector_filter = int(raw_inspector_param) if raw_inspector_param.isdigit() else None
-    elif current_user and current_user['role'] == 'INSPECTOR':
-        inspector_filter = current_user['id']
+    inspector_filter = None
+    user_filter = None
+    role_filter = None
+
+    if current_user:
+        if current_user['role'] == 'ADMIN':
+            inspectors_list = list_inspectors()
+            raw_inspector_param = request.args.get('inspector_id', '').strip()
+            inspector_filter = int(raw_inspector_param) if raw_inspector_param.isdigit() else None
+        elif current_user['role'] == 'INSPECTOR':
+            inspector_filter = current_user['id']
+        elif current_user['role'] == 'USER':
+            user_filter = current_user['id']
     else:
-        inspector_filter = None
+        role_filter = 'PUBLIC'
 
     inspections, total_count = list_inspections(
         search=search_query if search_query else None,
         status=status_filter if status_filter != 'ALL' else None,
         inspector_id=inspector_filter,
+        user_id=user_filter,
+        role=role_filter,
         date_from=date_from if date_from else None,
         date_to=date_to if date_to else None,
         limit=per_page,
@@ -480,6 +577,171 @@ def reset_inspector_password_route(user_id):
 
     return redirect(url_for('manage_inspectors'))
 
+@app.route('/admin/users')
+@admin_required
+def admin_users():
+    """Admin Registered Users Management Directory."""
+    search_query = request.args.get('search', '').strip()
+    role_filter = request.args.get('role', 'ALL').strip()
+    status_filter = request.args.get('status', 'ALL').strip()
+
+    users = list_users(
+        search=search_query if search_query else None,
+        role=role_filter if role_filter != 'ALL' else None,
+        status=status_filter if status_filter != 'ALL' else None
+    )
+
+    all_users = list_users()
+    counts = {
+        'total': len(all_users),
+        'user': sum(1 for u in all_users if u.get('role') == 'USER'),
+        'inspector': sum(1 for u in all_users if u.get('role') == 'INSPECTOR'),
+        'admin': sum(1 for u in all_users if u.get('role') == 'ADMIN')
+    }
+
+    return render_template(
+        'admin_users.html',
+        users=users,
+        search_query=search_query,
+        role_filter=role_filter,
+        status_filter=status_filter,
+        counts=counts
+    )
+
+# ==============================================================================
+# CITIZEN GRIEVANCE REDRESSAL & COMPLAINTS MANAGEMENT
+# ==============================================================================
+
+@app.route('/complaint/new', methods=['GET', 'POST'])
+@login_required
+def new_complaint():
+    """Citizen Grievance Submission Route."""
+    current_user = get_current_user()
+
+    if request.method == 'GET':
+        inspection_id_raw = request.args.get('inspection_id')
+        if not inspection_id_raw or not str(inspection_id_raw).isdigit():
+            flash("A valid inspection ID is required to register a grievance.", "warning")
+            return redirect(url_for('index'))
+
+        inspection = get_inspection(int(inspection_id_raw))
+        if not inspection:
+            flash("Inspection record not found.", "warning")
+            return redirect(url_for('index'))
+
+        return render_template('complaint_form.html', inspection=inspection, current_user=current_user)
+
+    # Handle POST
+    inspection_id = request.form.get('inspection_id')
+    if not inspection_id or not str(inspection_id).isdigit():
+        flash("Invalid inspection reference.", "danger")
+        return redirect(url_for('index'))
+
+    inspection = get_inspection(int(inspection_id))
+    if not inspection:
+        flash("Associated inspection not found.", "danger")
+        return redirect(url_for('index'))
+
+    retailer_details = request.form.get('retailer_details', '').strip()
+    description = request.form.get('description', '').strip()
+    contact_number = request.form.get('contact_number', '').strip() or current_user.get('phone', '')
+
+    if not retailer_details or not description:
+        flash("Please provide retailer/shop details and a description of the issue.", "warning")
+        return render_template('complaint_form.html', inspection=inspection, current_user=current_user)
+
+    loc = inspection.get('location_data') or {}
+    complaint_data = {
+        "user_id": current_user['id'],
+        "user_name": current_user['name'],
+        "user_email": current_user.get('email', ''),
+        "contact_number": contact_number,
+        "inspection_id": inspection['id'],
+        "product_name": inspection.get('product_name', 'Packaged Commodity'),
+        "compliance_result": inspection.get('overall_status', 'NON-COMPLIANT'),
+        "violations": inspection.get('detected_issues', []),
+        "location_address": loc.get('address', '') if isinstance(loc, dict) else '',
+        "latitude": loc.get('latitude') if isinstance(loc, dict) else None,
+        "longitude": loc.get('longitude') if isinstance(loc, dict) else None,
+        "inspection_timestamp": inspection.get('timestamp', ''),
+        "evidence_image_path": inspection.get('evidence_image_path', ''),
+        "retailer_details": retailer_details,
+        "description": description,
+        "status": "Submitted"
+    }
+
+    res = create_complaint(complaint_data)
+    flash(f"Grievance {res['complaint_no']} successfully filed under Legal Metrology Act, 2009!", "success")
+    return redirect(url_for('view_complaint_detail', complaint_id=res['id']))
+
+@app.route('/complaint/<int:complaint_id>')
+@login_required
+def view_complaint_detail(complaint_id):
+    """View and track a specific complaint."""
+    current_user = get_current_user()
+    complaint = get_complaint(complaint_id)
+    if not complaint:
+        flash("Grievance record not found.", "warning")
+        return redirect(url_for('list_user_complaints') if current_user['role'] == 'USER' else url_for('admin_complaints'))
+
+    # Access control: Citizens can ONLY view their own complaint. Admin can view all.
+    if current_user['role'] != 'ADMIN' and complaint['user_id'] != current_user['id']:
+        flash("Access denied: You are not authorized to view this grievance record.", "danger")
+        return redirect(url_for('list_user_complaints'))
+
+    return render_template('complaint_view.html', complaint=complaint, current_user=current_user)
+
+@app.route('/complaints')
+@login_required
+def list_user_complaints():
+    """Citizen Complaint History view."""
+    current_user = get_current_user()
+    if current_user['role'] == 'ADMIN':
+        return redirect(url_for('admin_complaints'))
+
+    complaints, total_count = list_complaints(user_id=current_user['id'])
+    return render_template('user_complaints.html', complaints=complaints, total_count=total_count, current_user=current_user)
+
+@app.route('/admin/complaints')
+@admin_required
+def admin_complaints():
+    """Admin Complaint Redressal Management Console."""
+    status_filter = request.args.get('status', 'ALL').strip()
+    search_query = request.args.get('search', '').strip()
+
+    status_arg = status_filter if status_filter in ['Submitted', 'Under Review', 'Resolved', 'Rejected'] else None
+    complaints, total_count = list_complaints(
+        status=status_arg,
+        search=search_query if search_query else None
+    )
+
+    return render_template(
+        'admin_complaints.html',
+        complaints=complaints,
+        total_count=total_count,
+        status_filter=status_filter,
+        search_query=search_query
+    )
+
+@app.route('/admin/complaints/<int:complaint_id>/status', methods=['POST'])
+@admin_required
+def admin_update_complaint_status(complaint_id):
+    """Admin endpoint to update grievance status and enforcement notes."""
+    new_status = request.form.get('status', 'Submitted').strip()
+    admin_notes = request.form.get('admin_notes', '').strip()
+
+    if new_status not in ['Submitted', 'Under Review', 'Resolved', 'Rejected']:
+        flash("Invalid status choice.", "warning")
+        return redirect(url_for('admin_complaints'))
+
+    updated = update_complaint_status(complaint_id, new_status, admin_notes=admin_notes)
+    if updated:
+        flash(f"Grievance #{complaint_id} status updated to '{new_status}'.", "success")
+    else:
+        flash("Failed to update grievance status.", "danger")
+
+    return redirect(url_for('admin_complaints'))
+
 @app.route('/rules')
 def view_rules():
     """Interactive Legal Metrology Rules Catalog."""
@@ -554,9 +816,14 @@ def load_sample(sample_key):
             "back": None
         },
         "evidence_image_path": evidence_path,
-        "officer_notes": f"Demo preset scan: {sample_key.upper()} scenario",
-        "inspector_id": session.get('user_id')
+        "officer_notes": f"Demo preset scan: {sample_key.upper()} scenario"
     }
+
+    # Demo preset scans remain PUBLIC per Legal Metrology specification
+    inspection_payload["role"] = "PUBLIC"
+    inspection_payload["performed_by"] = "Public / Demo Preset"
+    inspection_payload["inspector_id"] = None
+    inspection_payload["user_id"] = None
 
     inspection_id = save_inspection(inspection_payload)
     return redirect(url_for('view_result', inspection_id=inspection_id))
