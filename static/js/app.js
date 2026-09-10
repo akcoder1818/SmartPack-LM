@@ -624,6 +624,209 @@ const LocationModule = (function () {
 
 
 /* =========================================================
+   HERO MULTI-PRODUCT AI SHOWCASE MODULE
+   ========================================================= */
+const HeroShowcaseModule = (function () {
+    const products = {
+        chips: {
+            title: 'Crispy Chips',
+            subtitle: 'Tangy Tomato Masala',
+            category: 'SNACKS',
+            weight: '50g',
+            mrp: '₹20.00',
+            mfg: '08/2026',
+            emoji: '🥔',
+            theme: 'pack-theme-chips',
+            statusText: 'AI Scanning: Classic Potato Chips (50g)',
+            lensMrp: '₹20.00 (Incl. of all taxes)',
+            lensQty: '50 g • Unit Sale Price: ₹0.40/g',
+            lensDate: 'Mfg: 08/2026 | Best Before: 6 Months',
+            lensCare: 'Origin: India | Care: 1800-202-9900',
+            resultTitle: '100% Statutory Compliance',
+            resultSub: 'All 7/7 Legal Metrology Declarations Detected'
+        },
+        biscuits: {
+            title: 'Royal Biscuits',
+            subtitle: 'Enriched Glucose & Milk',
+            category: 'BAKERY',
+            weight: '200g',
+            mrp: '₹30.00',
+            mfg: '07/2026',
+            emoji: '🍪',
+            theme: 'pack-theme-biscuits',
+            statusText: 'AI Scanning: Royal Glucose Biscuits (200g)',
+            lensMrp: '₹30.00 (Incl. of all taxes)',
+            lensQty: '200 g • Unit Sale Price: ₹0.15/g',
+            lensDate: 'Mfg: 07/2026 | Best Before: 9 Months',
+            lensCare: 'Origin: India | Care: 1800-111-2233',
+            resultTitle: '100% Statutory Compliance',
+            resultSub: 'Weight, MRP & Standard Units Verified'
+        },
+        oil: {
+            title: 'Pure Gold Oil',
+            subtitle: 'Refined Sunflower Oil',
+            category: 'EDIBLE OIL',
+            weight: '1 Litre',
+            mrp: '₹145.00',
+            mfg: '06/2026',
+            emoji: '🌻',
+            theme: 'pack-theme-oil',
+            statusText: 'AI Scanning: Refined Sunflower Oil (1L)',
+            lensMrp: '₹145.00 (Incl. of all taxes)',
+            lensQty: '1 L (910g) • Unit Sale Price: ₹145.00/L',
+            lensDate: 'Mfg: 06/2026 | Best Before: 12 Months',
+            lensCare: 'Origin: India | FSSAI & Metrology Verified',
+            resultTitle: '100% Statutory Compliance',
+            resultSub: 'Dual Metric (Volume & Mass) Clause Verified'
+        },
+        spices: {
+            title: 'King Masala',
+            subtitle: 'Pure Ground Spice Blend',
+            category: 'SPICES',
+            weight: '100g',
+            mrp: '₹65.00',
+            mfg: '08/2026',
+            emoji: '🌶️',
+            theme: 'pack-theme-spices',
+            statusText: 'AI Scanning: Kitchen King Garam Masala (100g)',
+            lensMrp: '₹65.00 (Incl. of all taxes)',
+            lensQty: '100 g • Unit Sale Price: ₹0.65/g',
+            lensDate: 'Mfg: 08/2026 | Best Before: 12 Months',
+            lensCare: 'Origin: India | Agmark & Metrology OK',
+            resultTitle: '100% Statutory Compliance',
+            resultSub: 'Declarations on Principal Display Panel OK'
+        },
+        noodles: {
+            title: 'Express Noodles',
+            subtitle: '2-Minute Masala Magic',
+            category: 'INSTANT FOOD',
+            weight: '70g',
+            mrp: '₹14.00',
+            mfg: '08/2026',
+            emoji: '🍜',
+            theme: 'pack-theme-noodles',
+            statusText: 'AI Scanning: Express Masala Noodles (70g)',
+            lensMrp: '₹14.00 (Incl. of all taxes)',
+            lensQty: '70 g • Unit Sale Price: ₹0.20/g',
+            lensDate: 'Mfg: 08/2026 | Best Before: 9 Months',
+            lensCare: 'Origin: India | Consumer Desk: care@brand.in',
+            resultTitle: '100% Statutory Compliance',
+            resultSub: 'Full Rule 6(1) Declaration Set Verified'
+        },
+        juice: {
+            title: 'Fresh Mango',
+            subtitle: '100% Real Fruit Juice',
+            category: 'BEVERAGES',
+            weight: '1000ml',
+            mrp: '₹110.00',
+            mfg: '08/2026',
+            emoji: '🧃',
+            theme: 'pack-theme-juice',
+            statusText: 'AI Scanning: Orchard Fresh Mango Juice (1000ml)',
+            lensMrp: '₹110.00 (Incl. of all taxes)',
+            lensQty: '1000 ml (1 L) • Unit Price: ₹0.11/ml',
+            lensDate: 'Mfg: 08/2026 | Best Before: 6 Months',
+            lensCare: 'Origin: India | Toll-free: 1800-400-8800',
+            resultTitle: '100% Statutory Compliance',
+            resultSub: 'Standard Packaging Quantity Standardized'
+        },
+        pulses: {
+            title: 'Organic Toor Dal',
+            subtitle: 'Unpolished Desi Grains',
+            category: 'PULSES',
+            weight: '1 kg',
+            mrp: '₹160.00',
+            mfg: '08/2026',
+            emoji: '🌾',
+            theme: 'pack-theme-pulses',
+            statusText: 'AI Scanning: Organic Toor Dal Pulses (1kg)',
+            lensMrp: '₹160.00 (Incl. of all taxes)',
+            lensQty: '1 kg (1000g) • Unit Sale Price: ₹0.16/g',
+            lensDate: 'Packed: 08/2026 | Best Before: 12 Months',
+            lensCare: 'Origin: India | Packer: Bharat Agro Ltd.',
+            resultTitle: '100% Statutory Compliance',
+            resultSub: 'Packer Address & Net Mass SI Standard OK'
+        }
+    };
+
+    let autoTimer = null;
+    const keys = Object.keys(products);
+    let currentIndex = 0;
+
+    function selectProduct(key, userInitiated = false) {
+        const p = products[key];
+        if (!p) return;
+
+        // Update tabs
+        const tabs = document.querySelectorAll('#heroProductShelf .shelf-product-tab');
+        tabs.forEach(tab => {
+            tab.classList.toggle('active', tab.getAttribute('data-product') === key);
+        });
+
+        // Update elements with smooth subtle fade
+        const packEl = document.getElementById('heroProductPack');
+        if (packEl) {
+            // Remove previous theme class
+            Object.values(products).forEach(item => packEl.classList.remove(item.theme));
+            packEl.classList.add(p.theme);
+        }
+
+        const setTxt = (id, txt) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = txt;
+        };
+
+        setTxt('heroPackTitle', p.title);
+        setTxt('heroPackSubtitle', p.subtitle);
+        setTxt('heroPackCategory', p.category);
+        setTxt('heroPackWeight', p.weight);
+        setTxt('heroPackMrp', p.mrp);
+        setTxt('heroPackMfg', p.mfg);
+        setTxt('heroPackEmoji', p.emoji);
+
+        setTxt('heroScannerStatusText', p.statusText);
+        setTxt('lensMrpValue', p.lensMrp);
+        setTxt('lensQtyValue', p.lensQty);
+        setTxt('lensDateValue', p.lensDate);
+        setTxt('lensCareValue', p.lensCare);
+        setTxt('heroResultTitle', p.resultTitle);
+        setTxt('heroResultSub', p.resultSub);
+
+        currentIndex = keys.indexOf(key);
+
+        if (userInitiated) {
+            // Reset auto-timer if clicked manually
+            clearInterval(autoTimer);
+            autoTimer = setInterval(cycleNext, 5000);
+        }
+    }
+
+    function cycleNext() {
+        currentIndex = (currentIndex + 1) % keys.length;
+        selectProduct(keys[currentIndex], false);
+    }
+
+    function init() {
+        const shelf = document.getElementById('heroProductShelf');
+        if (!shelf) return;
+
+        shelf.addEventListener('click', function (e) {
+            const tab = e.target.closest('.shelf-product-tab');
+            if (tab) {
+                const productKey = tab.getAttribute('data-product');
+                selectProduct(productKey, true);
+            }
+        });
+
+        // Start subtle auto rotation
+        autoTimer = setInterval(cycleNext, 5000);
+    }
+
+    return { init, selectProduct };
+})();
+
+
+/* =========================================================
    BOOT
    ========================================================= */
 document.addEventListener('DOMContentLoaded', function () {
@@ -647,5 +850,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     setupFormSubmission();
     LocationModule.init();
+    HeroShowcaseModule.init();
 });
+
 

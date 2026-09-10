@@ -4,221 +4,355 @@
 
 {% block content %}
 <div class="container-fluid px-4 py-2">
-    <!-- 1. Hero Banner: Clean Government + AI Identity -->
+    <!-- 1. Hero Banner: Clean Government + AI Identity with Multi-Product AI Scanner Showcase -->
     <div class="card hero-card border-0 mb-4 shadow-sm text-white overflow-hidden position-relative">
-        <div class="card-body p-4 p-lg-5 position-relative z-1">
-            <div class="row align-items-center">
-                <div class="col-lg-8">
-                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+        <div class="card-body p-4 p-xl-5 position-relative z-1">
+            <div class="row align-items-center g-4">
+                <!-- Left Column: Platform Identity & Actions -->
+                <div class="col-xl-6 col-lg-6">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
                         <span class="badge bg-warning text-dark px-3 py-1.5 fw-bold text-uppercase tracking-wider">
-                            <i class="bi bi-award-fill me-1"></i> SIH 2026 &bull; SIH26034
+                            <i class="bi bi-award-fill me-1"></i> {{ t('sih_badge') }}
                         </span>
                         <span class="badge bg-white bg-opacity-15 text-white border border-white border-opacity-25 px-3 py-1.5">
-                            <i class="bi bi-shield-check text-warning me-1"></i> Ministry of Consumer Affairs
+                            <i class="bi bi-shield-check text-warning me-1"></i> {{ t('hero_gov_tag') }}
+                        </span>
+                        <span class="badge bg-success bg-opacity-75 text-white px-2.5 py-1.5">
+                            <i class="bi bi-check2-circle me-1"></i> {{ t('hero_rules_tag') }}
                         </span>
                     </div>
                     <h1 class="display-6 fw-bold mb-2">SmartPack-LM</h1>
                     <h4 class="fw-semibold text-warning mb-3" style="font-size: 1.25rem;">
-                        National Legal Metrology Digital Inspection Portal
+                        {{ t('portal_subtitle') }}
                     </h4>
-                    <p class="lead mb-4 text-light-slate" style="max-width: 720px; font-size: 1.05rem;">
-                        AI-assisted regulatory compliance verification platform enforcing the <strong>Legal Metrology (Packaged Commodities) Rules, 2011</strong>. Automatically extract statutory declarations from packaging images, detect non-compliance, and generate tamper-evident audit records.
+                    <p class="lead mb-4 text-light-slate" style="max-width: 680px; font-size: 1.02rem; line-height: 1.6;">
+                        {{ t('hero_lead') }}
                     </p>
+
+                    <!-- Packaged Product Category Chips -->
+                    <div class="mb-4">
+                        <small class="text-warning text-uppercase fw-bold tracking-wider d-block mb-2" style="font-size: 0.72rem;">
+                            <i class="bi bi-boxes me-1"></i> {{ t('hero_universal_verification') }}
+                        </small>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <span class="category-chip">{{ t('cat_chips') }}</span>
+                            <span class="category-chip">{{ t('cat_biscuits') }}</span>
+                            <span class="category-chip">{{ t('cat_oil') }}</span>
+                            <span class="category-chip">{{ t('cat_spices') }}</span>
+                            <span class="category-chip">{{ t('cat_noodles') }}</span>
+                            <span class="category-chip">{{ t('cat_juice') }}</span>
+                            <span class="category-chip">{{ t('cat_pulses') }}</span>
+                        </div>
+                    </div>
                     
                     <!-- Primary Action Buttons -->
-                    <div class="d-flex flex-wrap gap-3 align-items-center">
+                    <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
                         <a href="#scan-section" class="btn btn-warning text-dark fw-bold px-4 py-2.5 rounded-pill shadow-xs d-flex align-items-center gap-2">
                             <i class="bi bi-qr-code-scan fs-5"></i>
-                            <span>Scan Product / Start Inspection</span>
+                            <span>{{ t('btn_scan_start') }}</span>
                         </a>
-                        <a href="{{ url_for('view_rules') }}" class="btn btn-outline-light px-4 py-2.5 rounded-pill d-flex align-items-center gap-2">
+                        <a href="{{ url_for('view_rules') }}" class="btn btn-outline-light px-3.5 py-2.5 rounded-pill d-flex align-items-center gap-2">
                             <i class="bi bi-book-half"></i>
-                            <span>Explore Statutory Rules</span>
+                            <span>{{ t('btn_statutory_rules') }}</span>
                         </a>
-                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light px-4 py-2.5 rounded-pill d-flex align-items-center gap-2">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light px-3.5 py-2.5 rounded-pill d-flex align-items-center gap-2">
                             <i class="bi bi-speedometer2"></i>
-                            <span>Portal Dashboard</span>
+                            <span>{{ t('nav_dashboard') }}</span>
                         </a>
                     </div>
+
+                    <!-- Trust Stats Bar -->
+                    <div class="d-flex flex-wrap gap-3 pt-3 border-top border-white border-opacity-15 text-light-slate small">
+                        <span><i class="bi bi-check-circle-fill text-success me-1"></i><strong>7/7</strong> {{ t('trust_rules') }}</span>
+                        <span><i class="bi bi-translate text-warning me-1"></i><strong>6</strong> {{ t('trust_languages') }}</span>
+                        <span><i class="bi bi-shield-lock-fill text-info me-1"></i><strong>Rule 6(1)</strong> {{ t('trust_check') }}</span>
+                    </div>
                 </div>
-                <div class="col-lg-4 d-none d-lg-block text-end">
-                    <div class="hero-seal-box p-4 d-inline-block text-center rounded-3 bg-white bg-opacity-10 border border-white border-opacity-25 shadow-sm">
-                        <i class="bi bi-shield-check fs-1 text-warning d-block mb-2"></i>
-                        <span class="fw-bold d-block text-white fs-6">Rule 6(1) Enforced</span>
-                        <small class="text-white-50 d-block mb-2">Statutory Declarations Verification</small>
-                        <div class="badge bg-success bg-opacity-75 text-white px-2 py-1 small">Active Inspection Engine</div>
+
+                <!-- Right Column: Interactive AI Packaged Commodity Scanner -->
+                <div class="col-xl-6 col-lg-6">
+                    <div class="hero-showcase-stage p-3">
+                        <!-- Top Header of Showcase -->
+                        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="pulse-dot"></span>
+                                <span class="fw-bold text-white small text-uppercase tracking-wider">
+                                    <i class="bi bi-camera-fill text-warning me-1"></i> AI Packaged Commodity Scanner
+                                </span>
+                            </div>
+                            <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 small">
+                                Live Interactive Demo
+                            </span>
+                        </div>
+
+                        <!-- Packaged Food Products Category Selector (Horizontal Tabs) -->
+                        <div class="product-shelf-wrapper p-2 rounded-3 mb-3">
+                            <div class="d-flex gap-2 overflow-x-auto pb-1" id="heroProductShelf" style="scrollbar-width: thin;">
+                                <div class="shelf-product-tab active" data-product="chips" title="Click to scan Potato Chips">
+                                    <span>CHIPS</span>
+                                </div>
+                                <div class="shelf-product-tab" data-product="biscuits" title="Click to scan Biscuits">
+                                    <span>BISCUITS</span>
+                                </div>
+                                <div class="shelf-product-tab" data-product="oil" title="Click to scan Cooking Oil">
+                                    <span>OIL</span>
+                                </div>
+                                <div class="shelf-product-tab" data-product="spices" title="Click to scan Masala Spices">
+                                    <span>SPICES</span>
+                                </div>
+                                <div class="shelf-product-tab" data-product="noodles" title="Click to scan Instant Noodles">
+                                    <span>NOODLES</span>
+                                </div>
+                                <div class="shelf-product-tab" data-product="juice" title="Click to scan Fruit Juice Carton">
+                                    <span>JUICE</span>
+                                </div>
+                                <div class="shelf-product-tab" data-product="pulses" title="Click to scan Organic Pulses">
+                                    <span>PULSES</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scanner Viewport with Laser Sweep, Mockup Pack & Magnifying Glass -->
+                        <div class="scanner-viewport p-3">
+                            <!-- Reticle Target Corners -->
+                            <div class="reticle-corner reticle-top-left"></div>
+                            <div class="reticle-corner reticle-top-right"></div>
+                            <div class="reticle-corner reticle-bottom-left"></div>
+                            <div class="reticle-corner reticle-bottom-right"></div>
+
+                            <!-- Laser Scanline -->
+                            <div class="laser-scanline"></div>
+
+                            <!-- Floating "Analyzing" Status Pill -->
+                            <div class="text-center mb-2 position-relative" style="z-index: 8;">
+                                <div class="floating-status-pill" id="heroScannerStatus">
+                                    <span class="spinner-grow spinner-grow-sm text-warning" role="status" style="width: 0.65rem; height: 0.65rem;"></span>
+                                    <span id="heroScannerStatusText">AI Scanning: Classic Potato Chips (50g)</span>
+                                </div>
+                            </div>
+
+                            <!-- Inner Stage: Product Mockup Pack + Magnifying Glass Lens View -->
+                            <div class="row align-items-center g-2 position-relative mb-2" style="z-index: 7;">
+                                <!-- Left: Selected Product Graphic Pack -->
+                                <div class="col-sm-5 text-center d-flex justify-content-center">
+                                    <div class="mockup-product-pack pack-theme-chips" id="heroProductPack">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-black bg-opacity-40 text-white font-monospace" style="font-size: 0.62rem;" id="heroPackCategory">SNACKS</span>
+                                            <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.62rem;" id="heroPackWeight">50g</span>
+                                        </div>
+                                        <div class="my-auto py-2">
+                                            <div class="fs-1 mb-1" id="heroPackEmoji">🥔</div>
+                                            <h6 class="fw-bold mb-0 text-white text-truncate" id="heroPackTitle" style="font-size: 0.85rem;">Crispy Chips</h6>
+                                            <small class="text-white-75 d-block text-truncate" style="font-size: 0.65rem;" id="heroPackSubtitle">Tangy Tomato Masala</small>
+                                        </div>
+                                        <div class="p-1 rounded bg-black bg-opacity-40 text-start" style="font-size: 0.58rem;">
+                                            <div class="d-flex justify-content-between">
+                                                <span class="text-white-50">MRP:</span>
+                                                <span class="fw-bold text-warning" id="heroPackMrp">₹20.00</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span class="text-white-50">Mfg:</span>
+                                                <span class="text-white font-monospace" id="heroPackMfg">08/2026</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right: Magnifying Glass / Scanning Lens Focus Zone -->
+                                <div class="col-sm-7">
+                                    <div class="magnifying-lens-card p-2.5">
+                                        <div class="d-flex justify-content-between align-items-center pb-1 mb-1 border-bottom border-secondary border-opacity-50">
+                                            <span class="fw-bold text-warning d-flex align-items-center gap-1" style="font-size: 0.72rem;">
+                                                <i class="bi bi-search"></i>
+                                                <span>Rule 6(1) Magnified Declarations</span>
+                                            </span>
+                                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50" style="font-size: 0.62rem;">
+                                                AI Vision Validated
+                                            </span>
+                                        </div>
+
+                                        <!-- Highlighted Declarations inside the Lens -->
+                                        <div id="heroLensDeclarations">
+                                            <div class="lens-statutory-item">
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="stat-label">MRP (Rule 6(1)(e))</span>
+                                                    <span class="badge bg-success py-0" style="font-size: 0.6rem;">VALID</span>
+                                                </div>
+                                                <div class="stat-val" id="lensMrpValue">₹20.00 (Incl. of all taxes)</div>
+                                            </div>
+                                            <div class="lens-statutory-item">
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="stat-label">Net Quantity (Rule 6(1)(c))</span>
+                                                    <span class="badge bg-success py-0" style="font-size: 0.6rem;">SI METRIC</span>
+                                                </div>
+                                                <div class="stat-val" id="lensQtyValue">50 g &bull; Unit Sale Price: ₹0.40/g</div>
+                                            </div>
+                                            <div class="lens-statutory-item">
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="stat-label">Mfg Date &amp; Best Before</span>
+                                                    <span class="badge bg-success py-0" style="font-size: 0.6rem;">STANDARD</span>
+                                                </div>
+                                                <div class="stat-val" id="lensDateValue">Mfg: 08/2026 | Best Before: 6 Months</div>
+                                            </div>
+                                            <div class="lens-statutory-item">
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="stat-label">Consumer Care &amp; Origin</span>
+                                                    <span class="badge bg-success py-0" style="font-size: 0.6rem;">VERIFIED</span>
+                                                </div>
+                                                <div class="stat-val text-truncate" id="lensCareValue">Origin: India | Care: 1800-202-9900</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Beside/Bottom: Analysis Complete Card with Aligned Columns -->
+                            <div class="position-relative" style="z-index: 8;">
+                                <div class="analysis-complete-card">
+                                    <div class="d-flex justify-content-between align-items-center mb-1.5 pb-1 border-bottom border-secondary border-opacity-50">
+                                        <span class="fw-bold text-success small d-flex align-items-center gap-1.5">
+                                            <i class="bi bi-shield-fill-check fs-6"></i> Analysis Complete
+                                        </span>
+                                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50" style="font-size: 0.62rem;">
+                                            100% COMPLIANT
+                                        </span>
+                                    </div>
+                                    <div class="aligned-check-table">
+                                        <div class="aligned-check-row">
+                                            <span class="aligned-check-label">MRP</span>
+                                            <span class="aligned-check-arrow">&rarr;</span>
+                                            <span class="aligned-check-status">Valid <i class="bi bi-check2-circle"></i></span>
+                                        </div>
+                                        <div class="aligned-check-row">
+                                            <span class="aligned-check-label">CI</span>
+                                            <span class="aligned-check-arrow">&rarr;</span>
+                                            <span class="aligned-check-status">Valid <i class="bi bi-check2-circle"></i></span>
+                                        </div>
+                                        <div class="aligned-check-row">
+                                            <span class="aligned-check-label">SI</span>
+                                            <span class="aligned-check-arrow">&rarr;</span>
+                                            <span class="aligned-check-status">Valid <i class="bi bi-check2-circle"></i></span>
+                                        </div>
+                                        <div class="aligned-check-row">
+                                            <span class="aligned-check-label">Metric</span>
+                                            <span class="aligned-check-arrow">&rarr;</span>
+                                            <span class="aligned-check-status">Valid <i class="bi bi-check2-circle"></i></span>
+                                        </div>
+                                        <div class="aligned-check-row">
+                                            <span class="aligned-check-label">Standard Verified</span>
+                                            <span class="aligned-check-arrow">&rarr;</span>
+                                            <span class="aligned-check-status">Pass <i class="bi bi-patch-check-fill"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer tagline in showcase -->
+                        <div class="text-center pt-2">
+                            <small class="text-white-50" style="font-size: 0.72rem;">
+                                <i class="bi bi-info-circle text-warning me-1"></i>
+                                SmartPack-LM verifies packaged goods across all FMCG, food, retail &amp; e-commerce sectors.
+                            </small>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 2. Four Feature Cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-6 col-xl-3">
-            <div class="card border-0 shadow-sm h-100 rounded-3 p-3 bg-white">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-3 rounded-3 bg-primary bg-opacity-10 text-primary fs-4">
+    <!-- 2. "Why SmartPack-LM?" Section (Four Clean Feature Cards) -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="fw-bold text-navy mb-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-stars text-warning"></i> Why SmartPack-LM?
+                </h5>
+                <small class="text-muted">Enterprise-grade AI enforcement of Legal Metrology (Packaged Commodities) Rules, 2011</small>
+            </div>
+            <span class="badge bg-navy text-white px-2.5 py-1.5 small">GovTech AI Stack</span>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6 col-xl-3">
+                <div class="why-feature-card shadow-sm">
+                    <div class="feature-icon-box bg-primary bg-opacity-10 text-primary">
                         <i class="bi bi-cpu-fill"></i>
                     </div>
-                    <div>
-                        <h6 class="fw-bold text-navy mb-1">AI OCR &amp; Vision</h6>
-                        <p class="small text-muted mb-0">Adaptive binarization, CLAHE filtering, and OCR token coordinate extraction.</p>
-                    </div>
+                    <h6 class="fw-bold text-navy mb-1.5">AI-Powered OCR</h6>
+                    <p class="small text-muted mb-0">Multi-tier computer vision (PaddleOCR, Tesseract, and regex coordinate extraction) with adaptive CLAHE filtering.</p>
                 </div>
             </div>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <div class="card border-0 shadow-sm h-100 rounded-3 p-3 bg-white">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-3 rounded-3 bg-success bg-opacity-10 text-success fs-4">
+            <div class="col-md-6 col-xl-3">
+                <div class="why-feature-card shadow-sm">
+                    <div class="feature-icon-box bg-success bg-opacity-10 text-success">
                         <i class="bi bi-patch-check-fill"></i>
                     </div>
-                    <div>
-                        <h6 class="fw-bold text-navy mb-1">Compliance Engine</h6>
-                        <p class="small text-muted mb-0">Automated verification of MRP, Net Qty, Mfg Date, Packer, and Country of Origin.</p>
-                    </div>
+                    <h6 class="fw-bold text-navy mb-1.5">Compliance Check</h6>
+                    <p class="small text-muted mb-0">Automated Rule 6(1) validation of MRP with tax clause, Net Quantity in SI units, Mfg date, Packer &amp; Origin.</p>
                 </div>
             </div>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <div class="card border-0 shadow-sm h-100 rounded-3 p-3 bg-white">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-3 rounded-3 bg-danger bg-opacity-10 text-danger fs-4">
+            <div class="col-md-6 col-xl-3">
+                <div class="why-feature-card shadow-sm">
+                    <div class="feature-icon-box bg-danger bg-opacity-10 text-danger">
                         <i class="bi bi-geo-alt-fill"></i>
                     </div>
-                    <div>
-                        <h6 class="fw-bold text-navy mb-1">Location Detection</h6>
-                        <p class="small text-muted mb-0">High-precision GPS tagging and reverse-geocoded retail market mapping.</p>
-                    </div>
+                    <h6 class="fw-bold text-navy mb-1.5">Location &amp; Camera</h6>
+                    <p class="small text-muted mb-0">High-precision GPS tagging with reverse-geocoded retail market mapping and live in-browser camera scanning.</p>
                 </div>
             </div>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <div class="card border-0 shadow-sm h-100 rounded-3 p-3 bg-white">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-3 rounded-3 bg-warning bg-opacity-10 text-warning-emphasis fs-4">
+            <div class="col-md-6 col-xl-3">
+                <div class="why-feature-card shadow-sm">
+                    <div class="feature-icon-box bg-warning bg-opacity-10 text-warning-emphasis">
                         <i class="bi bi-file-earmark-pdf-fill"></i>
                     </div>
-                    <div>
-                        <h6 class="fw-bold text-navy mb-1">Evidence &amp; Reports</h6>
-                        <p class="small text-muted mb-0">Visual evidence bounding box maps, multilingual PDF reports, and grievance filing.</p>
-                    </div>
+                    <h6 class="fw-bold text-navy mb-1.5">Reports &amp; Complaints</h6>
+                    <p class="small text-muted mb-0">Official multilingual PDF audit certificates with QR verification and 1-click citizen grievance redressal.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 3. Legal Metrology Rules Preview & How It Works (2 Columns) -->
-    <div class="row g-4 mb-4">
-        <!-- Left: Rules Preview Card -->
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100 rounded-3 bg-white">
-                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-journal-bookmark-fill text-warning fs-5"></i>
-                        <h5 class="mb-0 fw-bold text-navy">Legal Metrology Compliance Rules</h5>
-                    </div>
-                    <span class="badge bg-light text-dark border">Rule 6(1) Standards</span>
-                </div>
-                <div class="card-body p-4">
-                    <p class="text-secondary small mb-3">
-                        The Legal Metrology (Packaged Commodities) Rules, 2011 mandate seven core statutory declarations on every retail packaged commodity sold in India:
-                    </p>
-                    <div class="row g-2 mb-3">
-                        <div class="col-sm-6">
-                            <div class="p-2 border rounded-2 bg-light small d-flex align-items-center gap-2">
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                                <span><strong>Rule 6(1)(a):</strong> Manufacturer / Packer</span>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="p-2 border rounded-2 bg-light small d-flex align-items-center gap-2">
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                                <span><strong>Rule 6(1)(b):</strong> Generic / Common Name</span>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="p-2 border rounded-2 bg-light small d-flex align-items-center gap-2">
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                                <span><strong>Rule 6(1)(c):</strong> Net Quantity in SI Units</span>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="p-2 border rounded-2 bg-light small d-flex align-items-center gap-2">
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                                <span><strong>Rule 6(1)(d):</strong> Month &amp; Year of Mfg</span>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="p-2 border rounded-2 bg-light small d-flex align-items-center gap-2">
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                                <span><strong>Rule 6(1)(e):</strong> MRP (incl. of all taxes)</span>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="p-2 border rounded-2 bg-light small d-flex align-items-center gap-2">
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                                <span><strong>Rule 6(1)(f):</strong> Consumer Care Redressal</span>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="p-2 border rounded-2 bg-light small d-flex align-items-center gap-2">
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                                <span><strong>Rule 6(1)(g):</strong> Country of Origin / Manufacturing</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                        <small class="text-muted">Includes 2021/2022 Unit Sale Price (USP) Amendment</small>
-                        <a href="{{ url_for('view_rules') }}" class="btn btn-sm btn-navy px-3 rounded-pill fw-semibold">
-                            <span>View All Rules</span> <i class="bi bi-arrow-right ms-1"></i>
-                        </a>
-                    </div>
-                </div>
+    <!-- 3. "How It Works" Section (Horizontal 4-Step Workflow) -->
+    <div class="card border-0 shadow-sm mb-4 rounded-3 bg-white">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-diagram-3-fill text-navy fs-5"></i>
+                <h5 class="mb-0 fw-bold text-navy">How It Works</h5>
             </div>
+            <span class="badge bg-light text-dark border">4-Step Inspection Workflow</span>
         </div>
-
-        <!-- Right: How It Works Preview -->
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100 rounded-3 bg-white">
-                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-gear-wide-connected text-primary fs-5"></i>
-                        <h5 class="mb-0 fw-bold text-navy">How SmartPack-LM Works</h5>
+        <div class="card-body p-4">
+            <div class="row g-3 align-items-center">
+                <!-- Step 1 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="workflow-card shadow-xs">
+                        <div class="workflow-step-num">1</div>
+                        <h6 class="fw-bold text-navy mb-1">Scan</h6>
+                        <p class="small text-muted mb-0">Capture or upload packaging images (front &amp; back statutory panels) with GPS market location tag.</p>
                     </div>
-                    <span class="badge bg-light text-dark border">4-Step Workflow</span>
                 </div>
-                <div class="card-body p-4">
-                    <div class="d-flex flex-column gap-3">
-                        <div class="d-flex align-items-start gap-3">
-                            <div class="badge bg-navy text-white rounded-circle p-2 px-3 fw-bold fs-6">1</div>
-                            <div>
-                                <h6 class="fw-bold text-dark mb-0">Capture or Upload Packaging</h6>
-                                <p class="small text-muted mb-0">Upload or take live photographs of the front panel and statutory declarations panel with GPS tag.</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-start gap-3">
-                            <div class="badge bg-navy text-white rounded-circle p-2 px-3 fw-bold fs-6">2</div>
-                            <div>
-                                <h6 class="fw-bold text-dark mb-0">Automated OCR Extraction</h6>
-                                <p class="small text-muted mb-0">Multi-tier computer vision extracts text tokens, identifies statutory declarations, and maps bounding boxes.</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-start gap-3">
-                            <div class="badge bg-navy text-white rounded-circle p-2 px-3 fw-bold fs-6">3</div>
-                            <div>
-                                <h6 class="fw-bold text-dark mb-0">Rule Validation &amp; Scoring</h6>
-                                <p class="small text-muted mb-0">Statutory engine evaluates declarations against Rule 6(1), verifying SI metric units, tax clauses, and contacts.</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-start gap-3">
-                            <div class="badge bg-navy text-white rounded-circle p-2 px-3 fw-bold fs-6">4</div>
-                            <div>
-                                <h6 class="fw-bold text-dark mb-0">Audit Record &amp; Grievance Redressal</h6>
-                                <p class="small text-muted mb-0">Download official multilingual PDF audit report, or 1-click submit grievance for non-compliant products.</p>
-                            </div>
-                        </div>
+                <!-- Step 2 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="workflow-card shadow-xs">
+                        <div class="workflow-step-num">2</div>
+                        <h6 class="fw-bold text-navy mb-1">Analyze</h6>
+                        <p class="small text-muted mb-0">Multi-tier OCR extracts text tokens, identifies statutory declarations, and maps bounding box coordinates.</p>
+                    </div>
+                </div>
+                <!-- Step 3 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="workflow-card shadow-xs">
+                        <div class="workflow-step-num">3</div>
+                        <h6 class="fw-bold text-navy mb-1">Get Result</h6>
+                        <p class="small text-muted mb-0">Statutory rule engine assesses compliance against Rule 6(1) and computes the compliance score.</p>
+                    </div>
+                </div>
+                <!-- Step 4 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="workflow-card shadow-xs">
+                        <div class="workflow-step-num">4</div>
+                        <h6 class="fw-bold text-navy mb-1">Take Action</h6>
+                        <p class="small text-muted mb-0">Download official multilingual PDF inspection report or file a citizen grievance with evidence in 1 click.</p>
                     </div>
                 </div>
             </div>
