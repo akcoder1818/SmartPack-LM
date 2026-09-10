@@ -12,10 +12,10 @@
                     <div>
                         <div class="d-flex align-items-center gap-2 mb-1">
                             <span class="badge bg-warning text-dark font-monospace fw-bold">{{ complaint.complaint_no }}</span>
-                            <span class="text-white-50 small"><i class="bi bi-clock me-1"></i>Filed: {{ complaint.created_at }}</span>
+                            <span class="text-white-50 small"><i class="bi bi-clock me-1"></i>{{ t('th_date_filed') }}: {{ complaint.created_at }}</span>
                         </div>
-                        <h3 class="fw-bold mb-0">Legal Metrology Grievance Receipt</h3>
-                        <small class="text-white-50">Department of Consumer Affairs &bull; Enforcement Roster</small>
+                        <h3 class="fw-bold mb-0">{{ t('receipt_title') }}</h3>
+                        <small class="text-white-50">{{ t('receipt_sub')|safe }}</small>
                     </div>
                     <div class="d-flex gap-2">
                         <span class="badge px-3 py-2 fs-6 rounded-pill fw-bold shadow-xs {% if complaint.status == 'Resolved' %}bg-success{% elif complaint.status == 'Under Review' %}bg-info text-dark{% elif complaint.status == 'Rejected' %}bg-secondary{% else %}bg-warning text-dark{% endif %}">
@@ -30,25 +30,25 @@
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
                         <i class="bi bi-info-circle-fill text-primary"></i>
-                        <span>Grievance Summary &amp; Associated Inspection</span>
+                        <span>{{ t('grievance_summary_title')|safe }}</span>
                     </h6>
                     <a href="{{ url_for('view_result', inspection_id=complaint.inspection_id) }}" class="btn btn-sm btn-outline-navy rounded-pill">
-                        <i class="bi bi-qr-code-scan me-1"></i> View Audit Inspection
+                        <i class="bi bi-qr-code-scan me-1"></i> {{ t('btn_view_audit_inspection') }}
                     </a>
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <div class="p-3 bg-light rounded-2 border">
-                                <small class="text-muted text-uppercase d-block fw-semibold mb-1">Product Details</small>
+                                <small class="text-muted text-uppercase d-block fw-semibold mb-1">{{ t('product_details') }}</small>
                                 <h6 class="fw-bold text-dark mb-1">{{ complaint.product_name }}</h6>
-                                <div class="small text-muted"><i class="bi bi-building me-1"></i>Status at Scan: <span class="badge bg-danger">{{ complaint.compliance_result }}</span></div>
-                                <div class="small text-muted mt-1"><i class="bi bi-shop me-1"></i>Retailer: <strong>{{ complaint.retailer_details or 'Not Specified' }}</strong></div>
+                                <div class="small text-muted"><i class="bi bi-building me-1"></i>{{ t('th_status') }}: <span class="badge bg-danger">{{ complaint.compliance_result }}</span></div>
+                                <div class="small text-muted mt-1"><i class="bi bi-shop me-1"></i>{{ t('th_retailer_details') }}: <strong>{{ complaint.retailer_details or 'Not Specified' }}</strong></div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="p-3 bg-light rounded-2 border">
-                                <small class="text-muted text-uppercase d-block fw-semibold mb-1">Complainant Information</small>
+                                <small class="text-muted text-uppercase d-block fw-semibold mb-1">{{ t('lbl_complainant_info') }}</small>
                                 <h6 class="fw-bold text-dark mb-1">{{ complaint.user_name }}</h6>
                                 <div class="small text-muted"><i class="bi bi-envelope me-1"></i>{{ complaint.user_email }}</div>
                                 <div class="small text-muted mt-1"><i class="bi bi-phone me-1"></i>{{ complaint.contact_number or 'No phone provided' }}</div>
@@ -58,7 +58,7 @@
 
                     <!-- Description -->
                     <div class="mb-4">
-                        <label class="form-label fw-bold text-dark small text-uppercase">Complaint Description</label>
+                        <label class="form-label fw-bold text-dark small text-uppercase">{{ t('lbl_complaint_desc') }}</label>
                         <div class="p-3 bg-light rounded-2 border text-dark">
                             {{ complaint.description }}
                         </div>
@@ -68,7 +68,7 @@
                     {% if complaint.violations %}
                     <div class="mb-4">
                         <label class="form-label fw-bold text-danger small text-uppercase">
-                            <i class="bi bi-exclamation-octagon-fill me-1"></i> Inherited Statutory Violations ({{ complaint.violations|length }})
+                            <i class="bi bi-exclamation-octagon-fill me-1"></i> {{ t('lbl_inherited_violations') }} ({{ complaint.violations|length }})
                         </label>
                         <ul class="list-group list-group-flush border rounded-2">
                             {% for v in complaint.violations %}
@@ -85,7 +85,7 @@
                     {% if complaint.admin_notes %}
                     <div class="p-3 rounded-2 border border-info border-opacity-50 bg-info bg-opacity-10 mb-4">
                         <small class="text-primary text-uppercase fw-bold d-block mb-1">
-                            <i class="bi bi-chat-left-dots-fill me-1"></i> Enforcement Action / Officer Notes:
+                            <i class="bi bi-chat-left-dots-fill me-1"></i> {{ t('lbl_officer_notes') }}
                         </small>
                         <p class="mb-0 text-dark small">{{ complaint.admin_notes }}</p>
                     </div>
@@ -94,7 +94,7 @@
                     <!-- Evidence Image (if present) -->
                     {% if complaint.evidence_image_path %}
                     <div class="mb-4">
-                        <label class="form-label fw-bold text-dark small text-uppercase">Visual Label Evidence</label>
+                        <label class="form-label fw-bold text-dark small text-uppercase">{{ t('lbl_visual_evidence') }}</label>
                         <div class="p-2 bg-dark rounded-3 text-center">
                             <img src="/uploads/{{ complaint.evidence_image_path|basename }}" class="img-fluid rounded-2" style="max-height: 400px;" alt="Evidence Map">
                         </div>
@@ -103,9 +103,9 @@
 
                     <div class="d-flex justify-content-between align-items-center pt-3 border-top">
                         <a href="{{ url_for('list_user_complaints') }}" class="btn btn-outline-secondary rounded-pill px-4">
-                            <i class="bi bi-arrow-left me-1"></i> Back to My Grievances
+                            <i class="bi bi-arrow-left me-1"></i> {{ t('btn_back_grievances') }}
                         </a>
-                        <span class="small text-muted">Protected under Legal Metrology Enforcement Framework</span>
+                        <span class="small text-muted">{{ t('protected_framework') }}</span>
                     </div>
                 </div>
             </div>

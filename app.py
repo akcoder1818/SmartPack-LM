@@ -21,7 +21,7 @@ from utils.database import (
     create_complaint, get_complaint, list_complaints, update_complaint_status
 )
 from utils.auth import get_current_user, login_required, admin_required
-from utils.ocr import run_ocr_pipeline
+from utils.ocr import run_ocr_pipeline, attach_field_sources
 from utils.extractor import extract_all_fields
 from utils.compliance import assess_compliance, load_rules
 from utils.annotator import generate_evidence_image
@@ -149,22 +149,29 @@ def analyze():
         back_file.save(back_path)
 
     primary_image_path = back_path if back_path else front_path
+    secondary_image_path = front_path if (back_path and front_path) else None
 
-    # Step 1: Execute OCR
-    ocr_res = run_ocr_pipeline(primary_image_path)
-    
-    # If front is separate, also run OCR on front to capture product name/branding
+    # Step 1: Execute OCR (Front & Back processed independently with preserved source identity)
     if back_path and front_path:
-        front_ocr = run_ocr_pipeline(front_path)
-        combined_text = (front_ocr.get("full_text", "") + "\n" + ocr_res.get("full_text", "")).strip()
-        combined_tokens = front_ocr.get("tokens", []) + ocr_res.get("tokens", [])
-        combined_lines = front_ocr.get("lines", []) + ocr_res.get("lines", [])
-        ocr_res["full_text"] = combined_text
-        ocr_res["tokens"] = combined_tokens
-        ocr_res["lines"] = combined_lines
+        front_ocr = run_ocr_pipeline(front_path, source="front")
+        back_ocr = run_ocr_pipeline(back_path, source="back")
+        combined_text = (front_ocr.get("full_text", "") + "\n" + back_ocr.get("full_text", "")).strip()
+        combined_tokens = front_ocr.get("tokens", []) + back_ocr.get("tokens", [])
+        combined_lines = front_ocr.get("lines", []) + back_ocr.get("lines", [])
+        ocr_res = {
+            "engine": back_ocr.get("engine") or front_ocr.get("engine", "SmartPack-LM OCR Engine"),
+            "full_text": combined_text,
+            "tokens": combined_tokens,
+            "lines": combined_lines,
+            "success": front_ocr.get("success", False) or back_ocr.get("success", False)
+        }
+    else:
+        single_source = "front" if front_path else ("back" if back_path else None)
+        ocr_res = run_ocr_pipeline(primary_image_path, source=single_source)
 
-    # Step 2: Extract Statutory Declarations
+    # Step 2: Extract Statutory Declarations & preserve token source identity
     extracted_fields = extract_all_fields(ocr_res)
+    attach_field_sources(extracted_fields, ocr_res.get("tokens", []))
 
     # Step 3: Legal Metrology Rule Compliance Assessment
     compliance_assessment = assess_compliance(extracted_fields)
@@ -176,7 +183,8 @@ def analyze():
         primary_image_path,
         extracted_fields,
         compliance_assessment.get("rule_evaluations", []),
-        evidence_path
+        evidence_path,
+        secondary_image_path=secondary_image_path
     )
 
     # Step 5: Save Inspection Record
@@ -494,6 +502,7 @@ def inspection_history():
 # ==============================================================================
 
 @app.route('/admin/inspectors')
+@app.route('/inspectors')
 @admin_required
 def manage_inspectors():
     """Admin Inspector Roster and Performance Management Console."""
@@ -779,6 +788,7 @@ def load_sample(sample_key):
     # Run full pipeline
     ocr_res = run_ocr_pipeline(dest_path)
     extracted_fields = extract_all_fields(ocr_res)
+    attach_field_sources(extracted_fields, ocr_res.get("tokens", []))
     compliance_assessment = assess_compliance(extracted_fields)
 
     evidence_fname = f"evidence_sample_{sample_key}_{timestamp_str}.jpg"

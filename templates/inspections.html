@@ -9,28 +9,28 @@
         <div>
             <div class="d-flex align-items-center gap-2">
                 <span class="badge bg-navy text-white fw-bold">
-                    {% if current_user and current_user.role == 'ADMIN' %}Central Audit Log{% elif current_user and current_user.role == 'USER' %}Citizen Inspection Vault{% else %}Inspector Field Roster{% endif %}
+                    {% if current_user and current_user.role == 'ADMIN' %}{{ t('inspections_central_badge') }}{% elif current_user and current_user.role == 'USER' %}{{ t('inspections_citizen_badge') }}{% else %}{{ t('inspections_roster_badge') }}{% endif %}
                 </span>
-                <span class="text-muted small">Total Audits: {{ total_count }}</span>
+                <span class="text-muted small">{{ t('total_audits_count') }} {{ total_count }}</span>
             </div>
             <h2 class="fw-bold text-navy mb-0">
                 {% if current_user and current_user.role == 'ADMIN' %}
-                    National Packaged Commodities Inspection History
+                    {{ t('inspections_admin_title') }}
                 {% elif current_user and current_user.role == 'USER' %}
-                    My Scanned Commodities &amp; Reports
+                    {{ t('inspections_user_title') }}
                 {% else %}
-                    My Inspection Records &amp; Verifications
+                    {{ t('inspections_officer_title') }}
                 {% endif %}
             </h2>
         </div>
         <div class="d-flex gap-2">
             <a href="{{ url_for('index') }}" class="btn btn-navy d-flex align-items-center gap-1 shadow-sm">
                 <i class="bi bi-qr-code-scan text-warning"></i>
-                <span class="fw-semibold">New Scan</span>
+                <span class="fw-semibold">{{ t('nav_scan') }}</span>
             </a>
             <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary d-flex align-items-center gap-1">
                 <i class="bi bi-speedometer2"></i>
-                <span>Dashboard</span>
+                <span>{{ t('nav_dashboard') }}</span>
             </a>
         </div>
     </div>
@@ -50,10 +50,10 @@
                 <!-- Status Filter -->
                 <div class="col-md-2">
                     <select name="status" class="form-select form-select-sm">
-                        <option value="ALL" {% if status_filter == 'ALL' or not status_filter %}selected{% endif %}>All Statuses</option>
-                        <option value="COMPLIANT" {% if status_filter == 'COMPLIANT' %}selected{% endif %}>Compliant (PASS)</option>
-                        <option value="NEEDS REVIEW" {% if status_filter == 'NEEDS REVIEW' %}selected{% endif %}>Needs Review</option>
-                        <option value="NON-COMPLIANT" {% if status_filter == 'NON-COMPLIANT' %}selected{% endif %}>Non-Compliant (FAIL)</option>
+                        <option value="ALL" {% if status_filter == 'ALL' or not status_filter %}selected{% endif %}>{{ t('filter_all') }}</option>
+                        <option value="COMPLIANT" {% if status_filter == 'COMPLIANT' %}selected{% endif %}>{{ t('filter_compliant') }}</option>
+                        <option value="NEEDS REVIEW" {% if status_filter == 'NEEDS REVIEW' %}selected{% endif %}>{{ t('filter_review') }}</option>
+                        <option value="NON-COMPLIANT" {% if status_filter == 'NON-COMPLIANT' %}selected{% endif %}>{{ t('filter_non_compliant') }}</option>
                     </select>
                 </div>
 
@@ -61,7 +61,7 @@
                 {% if current_user and current_user.role == 'ADMIN' and inspectors_list %}
                 <div class="col-md-3">
                     <select name="inspector_id" class="form-select form-select-sm">
-                        <option value="">All Field Inspectors</option>
+                        <option value="">{{ t('filter_all_inspectors') }}</option>
                         {% for ins in inspectors_list %}
                         <option value="{{ ins.id }}" {% if inspector_filter == ins.id|string %}selected{% endif %}>
                             {{ ins.name }} ({{ ins.inspector_id }})
@@ -81,9 +81,9 @@
 
                 <!-- Action buttons -->
                 <div class="col-12 d-flex gap-2 justify-content-end mt-2">
-                    <button type="submit" class="btn btn-sm btn-navy px-3">Apply Filters</button>
+                    <button type="submit" class="btn btn-sm btn-navy px-3">{{ t('btn_apply_filters') }}</button>
                     {% if search_query or (status_filter and status_filter != 'ALL') or inspector_filter or date_from or date_to %}
-                        <a href="{{ url_for('inspection_history') }}" class="btn btn-sm btn-outline-secondary">Reset Filters</a>
+                        <a href="{{ url_for('inspection_history') }}" class="btn btn-sm btn-outline-secondary">{{ t('btn_reset_filters') }}</a>
                     {% endif %}
                 </div>
             </form>
@@ -97,17 +97,17 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light small text-uppercase">
                         <tr>
-                            <th class="ps-3">ID / Ref</th>
-                            <th>Date &amp; Time</th>
-                            <th>Commodity / Brand</th>
+                            <th class="ps-3">{{ t('th_id') }}</th>
+                            <th>{{ t('th_date_time') }}</th>
+                            <th>{{ t('th_commodity_brand') }}</th>
                             {% if current_user and current_user.role == 'ADMIN' %}
-                            <th>Inspector / Citizen</th>
+                            <th>{{ t('th_inspector_citizen') }}</th>
                             {% endif %}
-                            <th>Manufacturer</th>
-                            <th class="text-center">Score</th>
-                            <th class="text-center">Status</th>
-                            <th>Location / Site</th>
-                            <th class="text-end pe-3">Actions</th>
+                            <th>{{ t('th_manufacturer') }}</th>
+                            <th class="text-center">{{ t('th_score') }}</th>
+                            <th class="text-center">{{ t('th_status') }}</th>
+                            <th>{{ t('th_location_site') }}</th>
+                            <th class="text-end pe-3">{{ t('th_actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -156,17 +156,17 @@
                                         <div class="text-dark fw-semibold text-truncate"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ item.location_data.city }}</div>
                                         <div class="text-muted text-truncate small" title="{{ item.location_data.address }}">{{ item.location_data.address }}</div>
                                     {% elif item.location_data and item.location_data.latitude %}
-                                        <span class="badge bg-light text-secondary border font-monospace"><i class="bi bi-geo-alt me-1"></i>GPS Tagged</span>
+                                        <span class="badge bg-light text-secondary border font-monospace"><i class="bi bi-geo-alt me-1"></i>{{ t('gps_tagged') }}</span>
                                     {% else %}
                                         <span class="text-muted fst-italic">—</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-end pe-3 text-nowrap">
                                     <a href="{{ url_for('view_result', inspection_id=item.id) }}" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill me-1" title="View Result">
-                                        <i class="bi bi-eye-fill"></i> View
+                                        <i class="bi bi-eye-fill"></i> {{ t('action_view') }}
                                     </a>
                                     <a href="{{ url_for('download_report', inspection_id=item.id, lang=current_lang) }}" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill me-1" title="Download Official PDF Report">
-                                        <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+                                        <i class="bi bi-file-earmark-pdf-fill"></i> {{ t('action_pdf') }}
                                     </a>
                                     {% if current_user.role == 'ADMIN' %}
                                     <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill delete-btn" data-id="{{ item.id }}" title="Delete Inspection">
@@ -180,9 +180,9 @@
                             <tr>
                                 <td colspan="{% if current_user.role == 'ADMIN' %}9{% else %}8{% endif %}" class="text-center py-5 text-muted">
                                     <i class="bi bi-search fs-1 text-muted d-block mb-2"></i>
-                                    No inspection records found matching your filters.
+                                    {{ t('no_matching_records') }}
                                     <div class="mt-2">
-                                        <a href="{{ url_for('index') }}" class="btn btn-sm btn-navy">Scan New Product</a>
+                                        <a href="{{ url_for('index') }}" class="btn btn-sm btn-navy">{{ t('scan_new_product') }}</a>
                                     </div>
                                 </td>
                             </tr>
@@ -197,7 +197,7 @@
                 <span class="text-muted">Showing page {{ page }} of {{ total_pages }} ({{ total_count }} records)</span>
                 <ul class="pagination pagination-sm mb-0">
                     <li class="page-item {% if page <= 1 %}disabled{% endif %}">
-                        <a class="page-link" href="{{ url_for('inspection_history', page=page-1, search=search_query, status=status_filter, inspector_id=inspector_filter, date_from=date_from, date_to=date_to) }}">&laquo; Prev</a>
+                        <a class="page-link" href="{{ url_for('inspection_history', page=page-1, search=search_query, status=status_filter, inspector_id=inspector_filter, date_from=date_from, date_to=date_to) }}">{{ t('pagination_prev') }}</a>
                     </li>
                     {% for p in range(1, total_pages + 1) %}
                         {% if p <= 5 or p == total_pages or (p >= page - 1 and p <= page + 1) %}
@@ -207,7 +207,7 @@
                         {% endif %}
                     {% endfor %}
                     <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
-                        <a class="page-link" href="{{ url_for('inspection_history', page=page+1, search=search_query, status=status_filter, inspector_id=inspector_filter, date_from=date_from, date_to=date_to) }}">Next &raquo;</a>
+                        <a class="page-link" href="{{ url_for('inspection_history', page=page+1, search=search_query, status=status_filter, inspector_id=inspector_filter, date_from=date_from, date_to=date_to) }}">{{ t('pagination_next') }}</a>
                     </li>
                 </ul>
             </div>

@@ -14,7 +14,7 @@
         <div>
             <div class="d-flex align-items-center gap-2">
                 <span class="badge bg-warning text-dark fw-bold">
-                    {% if current_user.role == 'ADMIN' %}Central Directorate Analytics{% else %}Inspector Portal{% endif %}
+                    {% if current_user.role == 'ADMIN' %}{{ t('dash_central_analytics') }}{% else %}{{ t('dash_inspector_portal') }}{% endif %}
                 </span>
                 <span class="text-muted small">
                     {% if current_user.role == 'ADMIN' %}National Surveillance Command{% else %}{{ current_user.department or 'Field Enforcement' }}{% endif %}
@@ -22,9 +22,9 @@
             </div>
             <h2 class="fw-bold text-navy mb-0">
                 {% if current_user.role == 'ADMIN' %}
-                    Legal Metrology National Compliance Dashboard
+                    {{ t('dash_admin_header') }}
                 {% else %}
-                    Inspector Enforcement Dashboard &bull; {{ current_user.name }}
+                    {{ t('dash_inspector_header') }} &bull; {{ current_user.name }}
                 {% endif %}
             </h2>
         </div>
@@ -35,7 +35,7 @@
             </a>
             <a href="{{ url_for('inspection_history') }}" class="btn btn-outline-secondary d-flex align-items-center gap-1 shadow-xs">
                 <i class="bi bi-clock-history"></i>
-                <span>All Records</span>
+                <span>{{ t('dash_all_records') }}</span>
             </a>
         </div>
     </div>
@@ -44,74 +44,74 @@
     <div class="row g-3 mb-4">
         <!-- 1. TOTAL SCANS -->
         <div class="col-sm-6 col-lg-4 col-xl-2">
-            <div class="card border-0 shadow-sm kpi-card bg-white h-100">
+            <div class="card border-0 shadow-sm kpi-card bg-white h-100 border-start border-4 border-navy">
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between mb-1">
-                        <span class="text-muted small text-uppercase fw-semibold">TOTAL SCANS</span>
+                        <span class="text-muted small text-uppercase fw-semibold">{{ t('dash_kpi_total_scans') }}</span>
                         <div class="kpi-icon-sm bg-navy-subtle text-navy p-1 rounded-2">
                             <i class="bi bi-box-seam fs-5"></i>
                         </div>
                     </div>
                     <div class="h3 fw-bold text-dark mb-0 font-monospace">{{ metrics.total_inspections }}</div>
-                    <small class="text-muted"><i class="bi bi-check2-all me-1"></i>All Recorded Audits</small>
+                    <small class="text-muted"><i class="bi bi-check2-all me-1"></i>Total Inspections</small>
                 </div>
             </div>
         </div>
 
         <!-- 2. COMPLIANT -->
         <div class="col-sm-6 col-lg-4 col-xl-2">
-            <div class="card border-0 shadow-sm kpi-card bg-white h-100">
+            <div class="card border-0 shadow-sm kpi-card bg-white h-100 border-start border-4 border-success">
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between mb-1">
-                        <span class="text-muted small text-uppercase fw-semibold">COMPLIANT</span>
+                        <span class="text-muted small text-uppercase fw-semibold">{{ t('dash_kpi_compliant') }}</span>
                         <div class="kpi-icon-sm bg-success-subtle text-success p-1 rounded-2">
                             <i class="bi bi-shield-check fs-5"></i>
                         </div>
                     </div>
                     <div class="h3 fw-bold text-success mb-0 font-monospace">{{ metrics.compliant_count }}</div>
-                    <small class="text-success"><i class="bi bi-patch-check-fill me-1"></i>Rule 6(1) Verified</small>
+                    <small class="text-success fw-semibold"><i class="bi bi-patch-check-fill me-1"></i>{{ metrics.compliance_rate }}% Compliant</small>
                 </div>
             </div>
         </div>
 
         <!-- 3. NON-COMPLIANT / VIOLATIONS -->
         <div class="col-sm-6 col-lg-4 col-xl-2">
-            <div class="card border-0 shadow-sm kpi-card bg-white h-100">
+            <div class="card border-0 shadow-sm kpi-card bg-white h-100 border-start border-4 border-danger">
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between mb-1">
-                        <span class="text-muted small text-uppercase fw-semibold">VIOLATIONS</span>
+                        <span class="text-muted small text-uppercase fw-semibold">Violations</span>
                         <div class="kpi-icon-sm bg-danger-subtle text-danger p-1 rounded-2">
                             <i class="bi bi-shield-x fs-5"></i>
                         </div>
                     </div>
-                    <div class="h3 fw-bold text-danger mb-0 font-monospace">{{ metrics.total_violations }}</div>
-                    <small class="text-danger"><i class="bi bi-exclamation-octagon-fill me-1"></i>Fail &amp; Review</small>
+                    <div class="h3 fw-bold text-danger mb-0 font-monospace">{{ metrics.non_compliant_count }}</div>
+                    <small class="text-danger fw-semibold"><i class="bi bi-exclamation-octagon-fill me-1"></i>Section 36 Action</small>
                 </div>
             </div>
         </div>
 
-        <!-- 4. COMPLIANCE RATE -->
+        <!-- 4. NEEDS REVIEW -->
         <div class="col-sm-6 col-lg-4 col-xl-2">
-            <div class="card border-0 shadow-sm kpi-card bg-white h-100">
+            <div class="card border-0 shadow-sm kpi-card bg-white h-100 border-start border-4 border-warning">
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between mb-1">
-                        <span class="text-muted small text-uppercase fw-semibold">COMPLIANCE RATE</span>
+                        <span class="text-muted small text-uppercase fw-semibold">Needs Review</span>
                         <div class="kpi-icon-sm bg-warning-subtle text-warning-emphasis p-1 rounded-2">
-                            <i class="bi bi-percent fs-5"></i>
+                            <i class="bi bi-shield-exclamation fs-5"></i>
                         </div>
                     </div>
-                    <div class="h3 fw-bold text-dark mb-0 font-monospace">{{ metrics.compliance_rate }}%</div>
-                    <small class="text-muted">Avg Score: {{ metrics.average_score }}%</small>
+                    <div class="h3 fw-bold text-warning-emphasis mb-0 font-monospace">{{ metrics.review_count }}</div>
+                    <small class="text-warning-emphasis fw-semibold"><i class="bi bi-search me-1"></i>Manual Scrutiny</small>
                 </div>
             </div>
         </div>
 
         <!-- 5. TOTAL INSPECTORS -->
         <div class="col-sm-6 col-lg-4 col-xl-2">
-            <div class="card border-0 shadow-sm kpi-card bg-white h-100">
+            <div class="card border-0 shadow-sm kpi-card bg-white h-100 border-start border-4 border-primary">
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between mb-1">
-                        <span class="text-muted small text-uppercase fw-semibold">INSPECTORS</span>
+                        <span class="text-muted small text-uppercase fw-semibold">{{ t('dash_kpi_inspectors') }}</span>
                         <div class="kpi-icon-sm bg-primary-subtle text-primary p-1 rounded-2">
                             <i class="bi bi-people-fill fs-5"></i>
                         </div>
@@ -124,16 +124,16 @@
 
         <!-- 6. SCANS TODAY -->
         <div class="col-sm-6 col-lg-4 col-xl-2">
-            <div class="card border-0 shadow-sm kpi-card bg-white h-100">
+            <div class="card border-0 shadow-sm kpi-card bg-white h-100 border-start border-4 border-info">
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between mb-1">
-                        <span class="text-muted small text-uppercase fw-semibold">SCANS TODAY</span>
+                        <span class="text-muted small text-uppercase fw-semibold">{{ t('dash_kpi_scans_today') }}</span>
                         <div class="kpi-icon-sm bg-info-subtle text-info p-1 rounded-2">
                             <i class="bi bi-calendar-event fs-5"></i>
                         </div>
                     </div>
                     <div class="h3 fw-bold text-dark mb-0 font-monospace">{{ metrics.scans_today }}</div>
-                    <small class="text-muted"><i class="bi bi-clock-history me-1"></i>Active Shifts</small>
+                    <small class="text-muted"><i class="bi bi-clock-history me-1"></i>Avg Score: {{ metrics.average_score }}%</small>
                 </div>
             </div>
         </div>
@@ -147,9 +147,9 @@
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
                         <i class="bi bi-graph-up text-primary fs-5"></i>
-                        Inspection Activity Timeline
+                        {{ t('dash_timeline_title') }}
                     </h6>
-                    <span class="badge bg-light text-dark border">Recent Daily Cadence</span>
+                    <span class="badge bg-light text-dark border">{{ t('dash_timeline_sub') }}</span>
                 </div>
                 <div class="card-body p-3">
                     <div style="height: 250px;">
@@ -165,7 +165,7 @@
                 <div class="card-header bg-white py-3 border-bottom">
                     <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
                         <i class="bi bi-pie-chart-fill text-warning fs-5"></i>
-                        Compliance Outcome Breakdown
+                        {{ t('dash_outcome_title') }}
                     </h6>
                 </div>
                 <div class="card-body p-3 d-flex flex-column align-items-center justify-content-center">
@@ -173,9 +173,9 @@
                         <canvas id="statusDoughnutChart"></canvas>
                     </div>
                     <div class="d-flex justify-content-center gap-3 mt-3 small">
-                        <span><span class="badge bg-success">&nbsp;</span> Pass</span>
-                        <span><span class="badge bg-warning text-dark">&nbsp;</span> Review</span>
-                        <span><span class="badge bg-danger">&nbsp;</span> Fail</span>
+                        <span><span class="badge bg-success">&nbsp;</span> {{ t('badge_pass') }}</span>
+                        <span><span class="badge bg-warning text-dark">&nbsp;</span> {{ t('badge_review') }}</span>
+                        <span><span class="badge bg-danger">&nbsp;</span> {{ t('badge_fail') }}</span>
                     </div>
                 </div>
             </div>
@@ -190,7 +190,7 @@
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
                         <i class="bi bi-bar-chart-line-fill text-danger fs-5"></i>
-                        Statutory Violations by Rule 6(1) Declaration Type
+                        {{ t('dash_violations_title') }}
                     </h6>
                     <span class="badge bg-light text-danger border">Rule 6(1)(a)-(g)</span>
                 </div>
@@ -208,10 +208,10 @@
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
                         <i class="bi bi-trophy-fill text-warning fs-5"></i>
-                        {% if current_user.role == 'ADMIN' %}Inspector Roster Activity{% else %}Geographic Scan Density{% endif %}
+                        {% if current_user.role == 'ADMIN' %}{{ t('dash_inspector_roster') }}{% else %}{{ t('dash_geo_density') }}{% endif %}
                     </h6>
                     {% if current_user.role == 'ADMIN' %}
-                    <a href="{{ url_for('manage_inspectors') }}" class="small text-decoration-none">Manage &raquo;</a>
+                    <a href="{{ url_for('manage_inspectors') }}" class="small text-decoration-none">{{ t('dash_manage_link') }}</a>
                     {% endif %}
                 </div>
                 <div class="card-body p-3">
@@ -245,7 +245,7 @@
                     {% else %}
                         <div class="text-center py-4 text-muted small">
                             <i class="bi bi-geo-alt fs-2 text-muted d-block mb-1"></i>
-                            No location data recorded yet. Tag scans using "Detect My Location" on the scan page.
+                            {{ t('dash_no_location') }}
                         </div>
                     {% endif %}
                 </div>

@@ -12,22 +12,62 @@
                 <div class="col-xl-6 col-lg-6">
                     <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
                         <span class="badge bg-warning text-dark px-3 py-1.5 fw-bold text-uppercase tracking-wider">
-                            <i class="bi bi-award-fill me-1"></i> {{ t('sih_badge') }}
+                            <i class="bi bi-award-fill me-1"></i> SIH 2026 &bull; National Level
                         </span>
                         <span class="badge bg-white bg-opacity-15 text-white border border-white border-opacity-25 px-3 py-1.5">
                             <i class="bi bi-shield-check text-warning me-1"></i> {{ t('hero_gov_tag') }}
                         </span>
                         <span class="badge bg-success bg-opacity-75 text-white px-2.5 py-1.5">
-                            <i class="bi bi-check2-circle me-1"></i> {{ t('hero_rules_tag') }}
+                            <i class="bi bi-check2-circle me-1"></i> PCR 2011 &bull; Rule 6(1)
                         </span>
                     </div>
-                    <h1 class="display-6 fw-bold mb-2">SmartPack-LM</h1>
-                    <h4 class="fw-semibold text-warning mb-3" style="font-size: 1.25rem;">
-                        {{ t('portal_subtitle') }}
-                    </h4>
-                    <p class="lead mb-4 text-light-slate" style="max-width: 680px; font-size: 1.02rem; line-height: 1.6;">
+                    <h1 class="display-6 fw-bold mb-1">National Legal Metrology</h1>
+                    <h2 class="h4 fw-bold text-warning mb-3">Digital Inspection Portal (SmartPack-LM)</h2>
+                    <p class="lead mb-3 text-light-slate" style="max-width: 680px; font-size: 0.98rem; line-height: 1.55;">
                         {{ t('hero_lead') }}
                     </p>
+
+                    <!-- 4-Stage Visual Inspection Pipeline Mini-Graphic -->
+                    <div class="inspection-pipeline mb-4">
+                        <div class="row g-2 align-items-center text-center text-sm-start">
+                            <div class="col-6 col-sm-3">
+                                <div class="pipeline-step">
+                                    <div class="pipeline-step-badge">01</div>
+                                    <div class="pipeline-step-info">
+                                        <h6>Capture</h6>
+                                        <small>Dual Label</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-3">
+                                <div class="pipeline-step">
+                                    <div class="pipeline-step-badge">02</div>
+                                    <div class="pipeline-step-info">
+                                        <h6>Extract</h6>
+                                        <small>Multi-Pass OCR</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-3">
+                                <div class="pipeline-step">
+                                    <div class="pipeline-step-badge">03</div>
+                                    <div class="pipeline-step-info">
+                                        <h6>Verify</h6>
+                                        <small>Rule 6(1) Engine</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-3">
+                                <div class="pipeline-step">
+                                    <div class="pipeline-step-badge">04</div>
+                                    <div class="pipeline-step-info">
+                                        <h6>Report</h6>
+                                        <small>Tamper-Evident</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Packaged Product Category Chips -->
                     <div class="mb-4">
@@ -64,8 +104,8 @@
                     <!-- Trust Stats Bar -->
                     <div class="d-flex flex-wrap gap-3 pt-3 border-top border-white border-opacity-15 text-light-slate small">
                         <span><i class="bi bi-check-circle-fill text-success me-1"></i><strong>7/7</strong> {{ t('trust_rules') }}</span>
-                        <span><i class="bi bi-translate text-warning me-1"></i><strong>6</strong> {{ t('trust_languages') }}</span>
-                        <span><i class="bi bi-shield-lock-fill text-info me-1"></i><strong>Rule 6(1)</strong> {{ t('trust_check') }}</span>
+                        <span><i class="bi bi-translate text-warning me-1"></i><strong>7</strong> Indic Languages</span>
+                        <span><i class="bi bi-shield-lock-fill text-info me-1"></i><strong>Rule 6(1)</strong> Compliance Engine</span>
                     </div>
                 </div>
 
@@ -77,11 +117,11 @@
                             <div class="d-flex align-items-center gap-2">
                                 <span class="pulse-dot"></span>
                                 <span class="fw-bold text-white small text-uppercase tracking-wider">
-                                    <i class="bi bi-camera-fill text-warning me-1"></i> AI Packaged Commodity Scanner
+                                    <i class="bi bi-camera-fill text-warning me-1"></i> {{ t('ai_scanner_title') }}
                                 </span>
                             </div>
                             <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 small">
-                                Live Interactive Demo
+                                {{ t('live_interactive_demo') }}
                             </span>
                         </div>
 
@@ -127,7 +167,7 @@
                             <div class="text-center mb-2 position-relative" style="z-index: 8;">
                                 <div class="floating-status-pill" id="heroScannerStatus">
                                     <span class="spinner-grow spinner-grow-sm text-warning" role="status" style="width: 0.65rem; height: 0.65rem;"></span>
-                                    <span id="heroScannerStatusText">AI Scanning: Classic Potato Chips (50g)</span>
+                                    <span id="heroScannerStatusText">{{ t('scanning_prefix') }} Classic Potato Chips (50g)</span>
                                 </div>
                             </div>
 
@@ -164,10 +204,10 @@
                                         <div class="d-flex justify-content-between align-items-center pb-1 mb-1 border-bottom border-secondary border-opacity-50">
                                             <span class="fw-bold text-warning d-flex align-items-center gap-1" style="font-size: 0.72rem;">
                                                 <i class="bi bi-search"></i>
-                                                <span>Rule 6(1) Magnified Declarations</span>
+                                                <span>{{ t('rule_magnified_title') }}</span>
                                             </span>
                                             <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50" style="font-size: 0.62rem;">
-                                                AI Vision Validated
+                                                {{ t('ai_vision_validated') }}
                                             </span>
                                         </div>
 
@@ -175,29 +215,29 @@
                                         <div id="heroLensDeclarations">
                                             <div class="lens-statutory-item">
                                                 <div class="d-flex justify-content-between">
-                                                    <span class="stat-label">MRP (Rule 6(1)(e))</span>
-                                                    <span class="badge bg-success py-0" style="font-size: 0.6rem;">VALID</span>
+                                                    <span class="stat-label">{{ t('lens_mrp_rule') }}</span>
+                                                    <span class="badge bg-success py-0" style="font-size: 0.6rem;">{{ t('status_valid') }}</span>
                                                 </div>
                                                 <div class="stat-val" id="lensMrpValue">₹20.00 (Incl. of all taxes)</div>
                                             </div>
                                             <div class="lens-statutory-item">
                                                 <div class="d-flex justify-content-between">
-                                                    <span class="stat-label">Net Quantity (Rule 6(1)(c))</span>
-                                                    <span class="badge bg-success py-0" style="font-size: 0.6rem;">SI METRIC</span>
+                                                    <span class="stat-label">{{ t('lens_qty_rule') }}</span>
+                                                    <span class="badge bg-success py-0" style="font-size: 0.6rem;">{{ t('status_si_metric') }}</span>
                                                 </div>
                                                 <div class="stat-val" id="lensQtyValue">50 g &bull; Unit Sale Price: ₹0.40/g</div>
                                             </div>
                                             <div class="lens-statutory-item">
                                                 <div class="d-flex justify-content-between">
-                                                    <span class="stat-label">Mfg Date &amp; Best Before</span>
-                                                    <span class="badge bg-success py-0" style="font-size: 0.6rem;">STANDARD</span>
+                                                    <span class="stat-label">{{ t('lens_date_rule')|safe }}</span>
+                                                    <span class="badge bg-success py-0" style="font-size: 0.6rem;">{{ t('status_standard') }}</span>
                                                 </div>
                                                 <div class="stat-val" id="lensDateValue">Mfg: 08/2026 | Best Before: 6 Months</div>
                                             </div>
                                             <div class="lens-statutory-item">
                                                 <div class="d-flex justify-content-between">
-                                                    <span class="stat-label">Consumer Care &amp; Origin</span>
-                                                    <span class="badge bg-success py-0" style="font-size: 0.6rem;">VERIFIED</span>
+                                                    <span class="stat-label">{{ t('lens_care_rule')|safe }}</span>
+                                                    <span class="badge bg-success py-0" style="font-size: 0.6rem;">{{ t('status_verified') }}</span>
                                                 </div>
                                                 <div class="stat-val text-truncate" id="lensCareValue">Origin: India | Care: 1800-202-9900</div>
                                             </div>
@@ -211,37 +251,37 @@
                                 <div class="analysis-complete-card">
                                     <div class="d-flex justify-content-between align-items-center mb-1.5 pb-1 border-bottom border-secondary border-opacity-50">
                                         <span class="fw-bold text-success small d-flex align-items-center gap-1.5">
-                                            <i class="bi bi-shield-fill-check fs-6"></i> Analysis Complete
+                                            <i class="bi bi-shield-fill-check fs-6"></i> {{ t('analysis_complete_title') }}
                                         </span>
                                         <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50" style="font-size: 0.62rem;">
-                                            100% COMPLIANT
+                                            100% {{ t('status_compliant') }}
                                         </span>
                                     </div>
                                     <div class="aligned-check-table">
                                         <div class="aligned-check-row">
                                             <span class="aligned-check-label">MRP</span>
                                             <span class="aligned-check-arrow">&rarr;</span>
-                                            <span class="aligned-check-status">Valid <i class="bi bi-check2-circle"></i></span>
+                                            <span class="aligned-check-status">{{ t('status_valid') }} <i class="bi bi-check2-circle"></i></span>
                                         </div>
                                         <div class="aligned-check-row">
                                             <span class="aligned-check-label">CI</span>
                                             <span class="aligned-check-arrow">&rarr;</span>
-                                            <span class="aligned-check-status">Valid <i class="bi bi-check2-circle"></i></span>
+                                            <span class="aligned-check-status">{{ t('status_valid') }} <i class="bi bi-check2-circle"></i></span>
                                         </div>
                                         <div class="aligned-check-row">
                                             <span class="aligned-check-label">SI</span>
                                             <span class="aligned-check-arrow">&rarr;</span>
-                                            <span class="aligned-check-status">Valid <i class="bi bi-check2-circle"></i></span>
+                                            <span class="aligned-check-status">{{ t('status_valid') }} <i class="bi bi-check2-circle"></i></span>
                                         </div>
                                         <div class="aligned-check-row">
                                             <span class="aligned-check-label">Metric</span>
                                             <span class="aligned-check-arrow">&rarr;</span>
-                                            <span class="aligned-check-status">Valid <i class="bi bi-check2-circle"></i></span>
+                                            <span class="aligned-check-status">{{ t('status_valid') }} <i class="bi bi-check2-circle"></i></span>
                                         </div>
                                         <div class="aligned-check-row">
-                                            <span class="aligned-check-label">Standard Verified</span>
+                                            <span class="aligned-check-label">{{ t('lbl_standard_verified') }}</span>
                                             <span class="aligned-check-arrow">&rarr;</span>
-                                            <span class="aligned-check-status">Pass <i class="bi bi-patch-check-fill"></i></span>
+                                            <span class="aligned-check-status">{{ t('status_pass') }} <i class="bi bi-patch-check-fill"></i></span>
                                         </div>
                                     </div>
                                 </div>
@@ -252,7 +292,7 @@
                         <div class="text-center pt-2">
                             <small class="text-white-50" style="font-size: 0.72rem;">
                                 <i class="bi bi-info-circle text-warning me-1"></i>
-                                SmartPack-LM verifies packaged goods across all FMCG, food, retail &amp; e-commerce sectors.
+                                {{ t('scanner_footer_tagline')|safe }}
                             </small>
                         </div>
                     </div>
@@ -261,128 +301,290 @@
         </div>
     </div>
 
-    <!-- 2. "Why SmartPack-LM?" Section (Four Clean Feature Cards) -->
+    <!-- 2. "Why SmartPack-LM?" Section (Six Core Capabilities) -->
     <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <h5 class="fw-bold text-navy mb-0 d-flex align-items-center gap-2">
-                    <i class="bi bi-stars text-warning"></i> Why SmartPack-LM?
+                    <i class="bi bi-stars text-warning"></i> {{ t('why_title') }}
                 </h5>
-                <small class="text-muted">Enterprise-grade AI enforcement of Legal Metrology (Packaged Commodities) Rules, 2011</small>
+                <small class="text-muted">{{ t('why_subtitle') }}</small>
             </div>
-            <span class="badge bg-navy text-white px-2.5 py-1.5 small">GovTech AI Stack</span>
+            <span class="badge bg-navy text-white px-2.5 py-1.5 small">{{ t('why_badge') }}</span>
         </div>
         <div class="row g-3">
-            <div class="col-md-6 col-xl-3">
-                <div class="why-feature-card shadow-sm">
-                    <div class="feature-icon-box bg-primary bg-opacity-10 text-primary">
-                        <i class="bi bi-cpu-fill"></i>
+            <!-- 1. Multi-Pass OCR -->
+            <div class="col-md-6 col-xl-4">
+                <div class="pillar-card">
+                    <div class="d-flex align-items-center gap-2.5 mb-2">
+                        <div class="feature-icon-box bg-primary bg-opacity-10 text-primary mb-0">
+                            <i class="bi bi-cpu-fill"></i>
+                        </div>
+                        <h6 class="fw-bold text-navy mb-0">{{ t('feat_ocr_title') }}</h6>
                     </div>
-                    <h6 class="fw-bold text-navy mb-1.5">AI-Powered OCR</h6>
-                    <p class="small text-muted mb-0">Multi-tier computer vision (PaddleOCR, Tesseract, and regex coordinate extraction) with adaptive CLAHE filtering.</p>
+                    <p class="small text-muted mb-0">{{ t('feat_ocr_desc') }}</p>
                 </div>
             </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="why-feature-card shadow-sm">
-                    <div class="feature-icon-box bg-success bg-opacity-10 text-success">
-                        <i class="bi bi-patch-check-fill"></i>
+            <!-- 2. Legal Metrology Rules -->
+            <div class="col-md-6 col-xl-4">
+                <div class="pillar-card">
+                    <div class="d-flex align-items-center gap-2.5 mb-2">
+                        <div class="feature-icon-box bg-success bg-opacity-10 text-success mb-0">
+                            <i class="bi bi-patch-check-fill"></i>
+                        </div>
+                        <h6 class="fw-bold text-navy mb-0">{{ t('feat_comp_title') }}</h6>
                     </div>
-                    <h6 class="fw-bold text-navy mb-1.5">Compliance Check</h6>
-                    <p class="small text-muted mb-0">Automated Rule 6(1) validation of MRP with tax clause, Net Quantity in SI units, Mfg date, Packer &amp; Origin.</p>
+                    <p class="small text-muted mb-0">{{ t('feat_comp_desc')|safe }}</p>
                 </div>
             </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="why-feature-card shadow-sm">
-                    <div class="feature-icon-box bg-danger bg-opacity-10 text-danger">
-                        <i class="bi bi-geo-alt-fill"></i>
+            <!-- 3. Dual-Image Evidence Mapping -->
+            <div class="col-md-6 col-xl-4">
+                <div class="pillar-card">
+                    <div class="d-flex align-items-center gap-2.5 mb-2">
+                        <div class="feature-icon-box bg-info bg-opacity-10 text-info mb-0">
+                            <i class="bi bi-bounding-box-circles"></i>
+                        </div>
+                        <h6 class="fw-bold text-navy mb-0">Dual-Image Evidence</h6>
                     </div>
-                    <h6 class="fw-bold text-navy mb-1.5">Location &amp; Camera</h6>
-                    <p class="small text-muted mb-0">High-precision GPS tagging with reverse-geocoded retail market mapping and live in-browser camera scanning.</p>
+                    <p class="small text-muted mb-0">Independent token coordinate preservation for front and statutory back packaging labels.</p>
                 </div>
             </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="why-feature-card shadow-sm">
-                    <div class="feature-icon-box bg-warning bg-opacity-10 text-warning-emphasis">
-                        <i class="bi bi-file-earmark-pdf-fill"></i>
+            <!-- 4. 7 Indic Languages -->
+            <div class="col-md-6 col-xl-4">
+                <div class="pillar-card">
+                    <div class="d-flex align-items-center gap-2.5 mb-2">
+                        <div class="feature-icon-box bg-warning bg-opacity-10 text-warning-emphasis mb-0">
+                            <i class="bi bi-translate"></i>
+                        </div>
+                        <h6 class="fw-bold text-navy mb-0">7 Indic Languages</h6>
                     </div>
-                    <h6 class="fw-bold text-navy mb-1.5">Reports &amp; Complaints</h6>
-                    <p class="small text-muted mb-0">Official multilingual PDF audit certificates with QR verification and 1-click citizen grievance redressal.</p>
+                    <p class="small text-muted mb-0">Native UI and statutory audit reports in English, Hindi, Marathi, Tamil, Kannada, Telugu, and Malayalam.</p>
+                </div>
+            </div>
+            <!-- 5. Tamper-Evident PDF Reports -->
+            <div class="col-md-6 col-xl-4">
+                <div class="pillar-card">
+                    <div class="d-flex align-items-center gap-2.5 mb-2">
+                        <div class="feature-icon-box bg-danger bg-opacity-10 text-danger mb-0">
+                            <i class="bi bi-file-earmark-pdf-fill"></i>
+                        </div>
+                        <h6 class="fw-bold text-navy mb-0">{{ t('feat_rep_title')|safe }}</h6>
+                    </div>
+                    <p class="small text-muted mb-0">{{ t('feat_rep_desc') }}</p>
+                </div>
+            </div>
+            <!-- 6. Officer GIS & Enforcement Tracking -->
+            <div class="col-md-6 col-xl-4">
+                <div class="pillar-card">
+                    <div class="d-flex align-items-center gap-2.5 mb-2">
+                        <div class="feature-icon-box bg-primary bg-opacity-10 text-primary mb-0">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </div>
+                        <h6 class="fw-bold text-navy mb-0">{{ t('feat_loc_title')|safe }}</h6>
+                    </div>
+                    <p class="small text-muted mb-0">{{ t('feat_loc_desc') }}</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 3. "How It Works" Section (Horizontal 4-Step Workflow) -->
+    <!-- 3. "How It Works" Section (Modern 4-Step Workflow) -->
     <div class="card border-0 shadow-sm mb-4 rounded-3 bg-white">
         <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-diagram-3-fill text-navy fs-5"></i>
-                <h5 class="mb-0 fw-bold text-navy">How It Works</h5>
+                <h5 class="mb-0 fw-bold text-navy">{{ t('how_title') }}</h5>
             </div>
-            <span class="badge bg-light text-dark border">4-Step Inspection Workflow</span>
+            <span class="badge bg-light text-dark border">{{ t('how_subtitle') }}</span>
         </div>
         <div class="card-body p-4">
-            <div class="row g-3 align-items-center">
+            <div class="row g-3 align-items-stretch">
                 <!-- Step 1 -->
                 <div class="col-lg-3 col-md-6">
-                    <div class="workflow-card shadow-xs">
-                        <div class="workflow-step-num">1</div>
-                        <h6 class="fw-bold text-navy mb-1">Scan</h6>
-                        <p class="small text-muted mb-0">Capture or upload packaging images (front &amp; back statutory panels) with GPS market location tag.</p>
+                    <div class="workflow-card-modern">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="workflow-step-badge">01</span>
+                            <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold"><i class="bi bi-camera-fill me-1"></i> Capture</span>
+                        </div>
+                        <h6 class="fw-bold text-navy mb-1.5">{{ t('step1_title') }}</h6>
+                        <p class="small text-muted mb-0">{{ t('step1_desc')|safe }}</p>
                     </div>
                 </div>
                 <!-- Step 2 -->
                 <div class="col-lg-3 col-md-6">
-                    <div class="workflow-card shadow-xs">
-                        <div class="workflow-step-num">2</div>
-                        <h6 class="fw-bold text-navy mb-1">Analyze</h6>
-                        <p class="small text-muted mb-0">Multi-tier OCR extracts text tokens, identifies statutory declarations, and maps bounding box coordinates.</p>
+                    <div class="workflow-card-modern">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="workflow-step-badge">02</span>
+                            <span class="badge bg-info bg-opacity-10 text-info fw-semibold"><i class="bi bi-cpu-fill me-1"></i> Extract</span>
+                        </div>
+                        <h6 class="fw-bold text-navy mb-1.5">{{ t('step2_title') }}</h6>
+                        <p class="small text-muted mb-0">{{ t('step2_desc') }}</p>
                     </div>
                 </div>
                 <!-- Step 3 -->
                 <div class="col-lg-3 col-md-6">
-                    <div class="workflow-card shadow-xs">
-                        <div class="workflow-step-num">3</div>
-                        <h6 class="fw-bold text-navy mb-1">Get Result</h6>
-                        <p class="small text-muted mb-0">Statutory rule engine assesses compliance against Rule 6(1) and computes the compliance score.</p>
+                    <div class="workflow-card-modern">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="workflow-step-badge">03</span>
+                            <span class="badge bg-success bg-opacity-10 text-success fw-semibold"><i class="bi bi-shield-check me-1"></i> Verify</span>
+                        </div>
+                        <h6 class="fw-bold text-navy mb-1.5">{{ t('step3_title') }}</h6>
+                        <p class="small text-muted mb-0">{{ t('step3_desc') }}</p>
                     </div>
                 </div>
                 <!-- Step 4 -->
                 <div class="col-lg-3 col-md-6">
-                    <div class="workflow-card shadow-xs">
-                        <div class="workflow-step-num">4</div>
-                        <h6 class="fw-bold text-navy mb-1">Take Action</h6>
-                        <p class="small text-muted mb-0">Download official multilingual PDF inspection report or file a citizen grievance with evidence in 1 click.</p>
+                    <div class="workflow-card-modern">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="workflow-step-badge">04</span>
+                            <span class="badge bg-warning bg-opacity-15 text-warning-emphasis fw-semibold"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Report</span>
+                        </div>
+                        <h6 class="fw-bold text-navy mb-1.5">{{ t('step4_title') }}</h6>
+                        <p class="small text-muted mb-0">{{ t('step4_desc') }}</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 4. Quick 1-Click Demo Presets Bar -->
-    <div class="card border-0 shadow-sm mb-4 bg-gradient-preset rounded-3">
-        <div class="card-body p-3">
-            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <!-- Compact Rule 6(1) Summary Card -->
+    <div class="rule-summary-card mb-4 p-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3 pb-3 border-bottom">
+            <div>
                 <div class="d-flex align-items-center gap-2">
-                    <div class="preset-icon-badge">
-                        <i class="bi bi-lightning-charge-fill text-warning fs-5"></i>
-                    </div>
+                    <span class="badge bg-navy text-white px-2 py-1">Rule 6(1)</span>
+                    <h6 class="fw-bold text-navy mb-0 fs-6">Mandatory Statutory Declarations for Packaged Commodities</h6>
+                </div>
+                <small class="text-muted">Legal Metrology (Packaged Commodities) Rules, 2011 — Every pre-packaged commodity must display these 7 statutory particulars:</small>
+            </div>
+            <a href="{{ url_for('view_rules') }}" class="btn btn-sm btn-outline-navy px-3 py-2 rounded-pill fw-bold text-nowrap d-flex align-items-center gap-1.5 align-self-start align-self-md-center">
+                <i class="bi bi-book-half"></i>
+                <span>View Complete Rules &amp; Thresholds &rarr;</span>
+            </a>
+        </div>
+        <div class="row g-2.5">
+            <div class="col-md-6 col-lg-3">
+                <div class="rule-summary-item h-100">
+                    <div class="rule-summary-icon"><i class="bi bi-building"></i></div>
                     <div>
-                        <div class="fw-bold text-dark">{{ t('presets_title') }}</div>
-                        <div class="small text-muted">{{ t('presets_desc') }}</div>
+                        <div class="fw-bold small text-dark">Manufacturer / Packer</div>
+                        <div class="text-muted" style="font-size: 0.72rem;">Complete name and postal address of manufacturer, packer, or importer.</div>
                     </div>
                 </div>
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="{{ url_for('load_sample', sample_key='compliant') }}" class="btn btn-sm btn-outline-success fw-semibold shadow-xs">
-                        <i class="bi bi-check-circle-fill me-1 text-success"></i> {{ t('sample_compliant') }}
-                    </a>
-                    <a href="{{ url_for('load_sample', sample_key='noncompliant') }}" class="btn btn-sm btn-outline-danger fw-semibold shadow-xs">
-                        <i class="bi bi-x-circle-fill me-1 text-danger"></i> {{ t('sample_noncompliant') }}
-                    </a>
-                    <a href="{{ url_for('load_sample', sample_key='review') }}" class="btn btn-sm btn-outline-warning text-dark fw-semibold shadow-xs">
-                        <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i> {{ t('sample_review') }}
-                    </a>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="rule-summary-item h-100">
+                    <div class="rule-summary-icon"><i class="bi bi-globe"></i></div>
+                    <div>
+                        <div class="fw-bold small text-dark">Country of Origin</div>
+                        <div class="text-muted" style="font-size: 0.72rem;">Mandatory country of manufacture or assembly for all imported packages.</div>
+                    </div>
                 </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="rule-summary-item h-100">
+                    <div class="rule-summary-icon"><i class="bi bi-tag"></i></div>
+                    <div>
+                        <div class="fw-bold small text-dark">Generic Commodity Name</div>
+                        <div class="text-muted" style="font-size: 0.72rem;">Common or generic name of commodity contained in the package.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="rule-summary-item h-100">
+                    <div class="rule-summary-icon"><i class="bi bi-speedometer"></i></div>
+                    <div>
+                        <div class="fw-bold small text-dark">Net Quantity (SI Units)</div>
+                        <div class="text-muted" style="font-size: 0.72rem;">Net weight/volume in standard metric SI units (g, kg, ml, l).</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="rule-summary-item h-100">
+                    <div class="rule-summary-icon"><i class="bi bi-calendar-event"></i></div>
+                    <div>
+                        <div class="fw-bold small text-dark">Date of Manufacture / Packing</div>
+                        <div class="text-muted" style="font-size: 0.72rem;">Month and year of manufacture, packing, or import clearly declared.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="rule-summary-item h-100">
+                    <div class="rule-summary-icon"><i class="bi bi-currency-rupee"></i></div>
+                    <div>
+                        <div class="fw-bold small text-dark">MRP &amp; Unit Sale Price</div>
+                        <div class="text-muted" style="font-size: 0.72rem;">Maximum Retail Price inclusive of all taxes, plus unit sale price where mandated.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col-lg-4">
+                <div class="rule-summary-item h-100">
+                    <div class="rule-summary-icon"><i class="bi bi-headset"></i></div>
+                    <div>
+                        <div class="fw-bold small text-dark">Consumer Care Helpline</div>
+                        <div class="text-muted" style="font-size: 0.72rem;">Official name, address, telephone number, and email for consumer grievance redressal.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professional Trust & Statutory Alignment Section -->
+    <div class="trust-statutory-card mb-4">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <i class="bi bi-shield-lock-fill text-warning fs-5"></i>
+                    <h6 class="fw-bold text-navy mb-0">Built for Digital Legal Metrology Inspection</h6>
+                    <span class="badge bg-secondary-subtle text-secondary small">Statutory Compliance</span>
+                </div>
+                <p class="small text-muted mb-2" style="line-height: 1.5;">
+                    Engineered in strict alignment with the <strong>Legal Metrology Act, 2009</strong> and the <strong>Legal Metrology (Packaged Commodities) Rules, 2011 (PCR 2011)</strong>. SmartPack-LM automates statutory label verification, visual coordinate indexing, and bilingual inspection reporting to support enforcement officers and empower consumer vigilance nationwide.
+                </p>
+                <div class="small text-muted" style="font-size: 0.75rem;">
+                    <i class="bi bi-info-circle me-1 text-primary"></i> <em>Disclaimer: SmartPack-LM is an AI-assisted compliance inspection and decision-support tool. Statutory enforcement actions remain subject to official verification by competent Legal Metrology authorities.</em>
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="d-inline-flex flex-column gap-2 text-start p-3 bg-light rounded-3 border">
+                    <div class="small fw-bold text-dark d-flex align-items-center gap-1.5">
+                        <i class="bi bi-award-fill text-warning"></i> SIH 2026 Innovation
+                    </div>
+                    <div class="text-muted small" style="font-size: 0.74rem;">
+                        <strong>Department:</strong> Legal Metrology Division<br>
+                        <strong>Ministry:</strong> Consumer Affairs, Food &amp; Public Distribution<br>
+                        <strong>Engine:</strong> Multi-Pass Tesseract OCR &bull; Rule 6(1) Engine
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Quick 1-Click Demo Presets Bar (Segregated Evaluation Shelf) -->
+    <div class="demo-evaluation-shelf mb-4 p-3.5">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-2.5">
+                <div class="preset-icon-badge" style="background: rgba(245, 158, 11, 0.2); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid #F59E0B;">
+                    <i class="bi bi-lightning-charge-fill text-warning-emphasis fs-5"></i>
+                </div>
+                <div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fw-bold text-dark">{{ t('presets_title') }}</span>
+                        <span class="badge bg-warning text-dark font-monospace" style="font-size: 0.65rem;">DEMO / EVALUATION</span>
+                    </div>
+                    <div class="small text-muted" style="font-size: 0.78rem;">Test pre-loaded compliant, non-compliant, and borderline commodity packaging scenarios without uploading files.</div>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('load_sample', sample_key='compliant') }}" class="btn btn-sm btn-outline-success fw-semibold shadow-xs">
+                    <i class="bi bi-check-circle-fill me-1 text-success"></i> {{ t('sample_compliant') }} (100%)
+                </a>
+                <a href="{{ url_for('load_sample', sample_key='noncompliant') }}" class="btn btn-sm btn-outline-danger fw-semibold shadow-xs">
+                    <i class="bi bi-x-circle-fill me-1 text-danger"></i> {{ t('sample_noncompliant') }} (Fail)
+                </a>
+                <a href="{{ url_for('load_sample', sample_key='review') }}" class="btn btn-sm btn-outline-warning text-dark fw-semibold shadow-xs">
+                    <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i> {{ t('sample_review') }} (Review)
+                </a>
             </div>
         </div>
     </div>
@@ -392,77 +594,154 @@
         <div class="card-header bg-navy text-white py-3 border-bottom d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-camera-fill text-warning fs-5"></i>
-                <h5 class="mb-0 fw-bold">Scan &amp; Inspect Commodity Label</h5>
+                <div>
+                    <h5 class="mb-0 fw-bold">Digital Commodity Inspection Workstation</h5>
+                    <small class="text-white-50" style="font-size: 0.72rem;">Field packaging inspection &bull; Legal Metrology (Packaged Commodities) Rules, 2011</small>
+                </div>
             </div>
-            <span class="badge bg-warning text-dark">{{ t('dual_label_support') }}</span>
+            <span class="badge bg-warning text-dark fw-semibold px-2.5 py-1.5"><i class="bi bi-layers-half me-1"></i>{{ t('dual_label_support') }}</span>
         </div>
         <div class="card-body p-4">
+
+            <!-- Dual-Label Synergy Connector Banner -->
+            <div class="dual-label-synergy-banner mb-3 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-bounding-box text-navy fs-5"></i>
+                    <span class="small fw-semibold text-navy">Dual-Source Evidence Flow:</span>
+                    <span class="small text-muted"><strong>Front Label</strong> (Identity &amp; Variant) + <strong>Back Label</strong> (Mandatory Declarations) &rarr; <strong>Rule 6(1) Verification</strong></span>
+                </div>
+                <span class="badge bg-navy text-white font-monospace small">OCR Multi-Pass Engine</span>
+            </div>
+
+            <!-- Field Inspector Capture Tips Panel -->
+            <div class="capture-tips-card mb-4">
+                <div class="d-flex align-items-center gap-2 mb-1.5">
+                    <i class="bi bi-lightbulb-fill text-warning"></i>
+                    <span class="small fw-bold text-dark">Field Inspector Capture Guidelines:</span>
+                </div>
+                <div class="row g-2">
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="tip-item"><i class="bi bi-check-circle-fill"></i> <span>Keep full label within frame</span></div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="tip-item"><i class="bi bi-check-circle-fill"></i> <span>Ensure bright lighting &amp; sharp focus</span></div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="tip-item"><i class="bi bi-check-circle-fill"></i> <span>Tilt package to avoid glare &amp; reflections</span></div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="tip-item"><i class="bi bi-check-circle-fill"></i> <span>Capture both sides for 100% check</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Scan Validation Message Alert -->
+            <div id="scanValidationAlert" class="alert alert-danger py-2.5 px-3 rounded-3 small mb-3 shadow-xs d-none" role="alert"></div>
+
             <form action="{{ url_for('analyze') }}" method="POST" enctype="multipart/form-data" id="scanForm">
                 <div class="row g-4 mb-4">
-                    <!-- Front Label Upload -->
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold d-flex justify-content-between align-items-center">
-                            <span><i class="bi bi-card-image me-1 text-primary"></i> {{ t('front_label') }} <span class="text-danger">*</span></span>
-                            <small class="text-muted">{{ t('front_label_hint') }}</small>
-                        </label>
-                        <div class="dropzone-box text-center p-4 rounded-3 border-2 border-dashed position-relative" id="frontDropzone">
-                            <input type="file" name="front_image" id="frontImageInput" class="dropzone-input" accept="image/png, image/jpeg, image/jpg, image/webp, image/bmp" capture="environment" required>
-                            <div class="dropzone-content" id="frontDropzoneContent">
-                                <i class="bi bi-cloud-arrow-up-fill fs-1 text-primary opacity-75 mb-2 d-block"></i>
-                                <div class="fw-semibold text-dark mb-1">{{ t('front_dropzone_prompt') }}</div>
-                                <div class="small text-muted mb-2">{{ t('file_types_hint') }}</div>
-                                <div class="d-flex flex-wrap gap-2 justify-content-center" style="position:relative;z-index:20;">
-                                    <button type="button" class="btn btn-sm btn-primary px-3 rounded-pill" id="frontCameraBtn" onclick="event.stopPropagation();">
-                                        <i class="bi bi-camera-fill me-1"></i> Take Front Photo
-                                    </button>
-                                    <label class="btn btn-sm btn-outline-primary px-3 rounded-pill mb-0" style="cursor:pointer;">
-                                        {{ t('browse_files') }}
-                                        <input type="file" id="frontGalleryInput" accept="image/png,image/jpeg,image/jpg,image/webp,image/bmp" style="display:none;">
-                                    </label>
+                    <!-- Front Label Upload Card -->
+                    <div class="col-lg-6">
+                        <div class="inspection-card">
+                            <div class="inspection-card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-navy d-flex align-items-center gap-1.5">
+                                        <i class="bi bi-card-image text-primary"></i>
+                                        <span>{{ t('front_label') }}</span>
+                                    </h6>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Primary Product View &bull; Brand &amp; Net Quantity</small>
                                 </div>
+                                <span class="badge bg-primary px-2.5 py-1 font-monospace" style="font-size: 0.68rem;">REQUIRED *</span>
                             </div>
-                            <div class="dropzone-preview d-none position-relative" id="frontPreviewBox">
-                                <img src="" id="frontPreviewImg" class="img-fluid rounded-2 shadow-xs mb-2 preview-img" alt="Front Preview">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small text-truncate fw-semibold text-dark" id="frontFileName"></span>
-                                    <div class="d-flex gap-1">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" id="retakeFrontBtn"><i class="bi bi-arrow-counterclockwise"></i> Retake</button>
-                                        <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill" id="removeFrontBtn">&times; {{ t('remove_btn') }}</button>
+                            <div class="inspection-card-body">
+                                <p class="small text-muted mb-2" style="font-size: 0.78rem;">{{ t('front_label_hint') }}</p>
+                                <div class="dropzone-box text-center p-3 rounded-3 position-relative" id="frontDropzone">
+                                    <input type="file" name="front_image" id="frontImageInput" class="dropzone-input" accept="image/png, image/jpeg, image/jpg, image/webp, image/bmp" capture="environment" required>
+                                    
+                                    <div class="dropzone-content py-2" id="frontDropzoneContent">
+                                        <div class="mb-2">
+                                            <i class="bi bi-cloud-arrow-up-fill fs-1 text-primary opacity-75"></i>
+                                        </div>
+                                        <div class="fw-bold text-dark mb-1" style="font-size: 0.92rem;">{{ t('front_dropzone_prompt') }}</div>
+                                        <div class="small text-muted mb-3" style="font-size: 0.74rem;">{{ t('file_types_hint') }}</div>
+                                        
+                                        <div class="d-flex flex-wrap gap-2 justify-content-center" style="position:relative;z-index:20;">
+                                            <button type="button" class="btn btn-sm btn-primary px-3 py-1.5 rounded-pill shadow-xs" id="frontCameraBtn" onclick="event.stopPropagation();">
+                                                <i class="bi bi-camera-fill me-1"></i> {{ t('take_front_photo') }}
+                                            </button>
+                                            <label class="btn btn-sm btn-outline-primary px-3 py-1.5 rounded-pill shadow-xs mb-0" style="cursor:pointer;">
+                                                <i class="bi bi-folder2-open me-1"></i> {{ t('browse_files') }}
+                                                <input type="file" id="frontGalleryInput" accept="image/png,image/jpeg,image/jpg,image/webp,image/bmp" style="display:none;">
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="dropzone-preview d-none position-relative w-100" id="frontPreviewBox">
+                                        <div class="preview-container mb-2">
+                                            <img src="" id="frontPreviewImg" class="img-fluid preview-img" alt="Front Label Preview">
+                                        </div>
+                                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 p-1">
+                                            <div id="frontFileName" class="text-start"></div>
+                                            <div class="d-flex gap-1.5" style="position:relative;z-index:20;">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2.5 rounded-pill" id="replaceFrontBtn" title="Choose a different image"><i class="bi bi-arrow-repeat me-0.5"></i> Replace</button>
+                                                <button type="button" class="btn btn-sm btn-outline-warning text-dark py-1 px-2.5 rounded-pill" id="retakeFrontBtn" title="Re-take camera photo"><i class="bi bi-camera me-0.5"></i> {{ t('retake_btn') }}</button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2.5 rounded-pill" id="removeFrontBtn" title="Remove image">&times; {{ t('remove_btn') }}</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Back / Statutory Label Upload -->
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold d-flex justify-content-between align-items-center">
-                            <span><i class="bi bi-card-text me-1 text-primary"></i> {{ t('back_label') }}</span>
-                            <small class="text-muted">{{ t('back_label_hint') }}</small>
-                        </label>
-                        <div class="dropzone-box text-center p-4 rounded-3 border-2 border-dashed position-relative" id="backDropzone">
-                            <input type="file" name="back_image" id="backImageInput" class="dropzone-input" accept="image/png, image/jpeg, image/jpg, image/webp, image/bmp" capture="environment">
-                            <div class="dropzone-content" id="backDropzoneContent">
-                                <i class="bi bi-file-earmark-image-fill fs-1 text-secondary opacity-75 mb-2 d-block"></i>
-                                <div class="fw-semibold text-dark mb-1">{{ t('back_dropzone_prompt') }}</div>
-                                <div class="small text-muted mb-2">{{ t('back_optional_hint') }}</div>
-                                <div class="d-flex flex-wrap gap-2 justify-content-center" style="position:relative;z-index:20;">
-                                    <button type="button" class="btn btn-sm btn-secondary px-3 rounded-pill" id="backCameraBtn" onclick="event.stopPropagation();">
-                                        <i class="bi bi-camera-fill me-1"></i> Take Back Photo
-                                    </button>
-                                    <label class="btn btn-sm btn-outline-secondary px-3 rounded-pill mb-0" style="cursor:pointer;">
-                                        {{ t('browse_files') }}
-                                        <input type="file" id="backGalleryInput" accept="image/png,image/jpeg,image/jpg,image/webp,image/bmp" style="display:none;">
-                                    </label>
+                    <!-- Back / Statutory Label Upload Card -->
+                    <div class="col-lg-6">
+                        <div class="inspection-card">
+                            <div class="inspection-card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-navy d-flex align-items-center gap-1.5">
+                                        <i class="bi bi-card-text text-secondary"></i>
+                                        <span>{{ t('back_label') }}</span>
+                                    </h6>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Statutory Declaration View &bull; Mandatory PCR 2011 Panel</small>
                                 </div>
+                                <span class="badge bg-secondary-subtle text-secondary border px-2.5 py-1 font-monospace" style="font-size: 0.68rem;">RECOMMENDED</span>
                             </div>
-                            <div class="dropzone-preview d-none position-relative" id="backPreviewBox">
-                                <img src="" id="backPreviewImg" class="img-fluid rounded-2 shadow-xs mb-2 preview-img" alt="Back Preview">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small text-truncate fw-semibold text-dark" id="backFileName"></span>
-                                    <div class="d-flex gap-1">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" id="retakeBackBtn"><i class="bi bi-arrow-counterclockwise"></i> Retake</button>
-                                        <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill" id="removeBackBtn">&times; {{ t('remove_btn') }}</button>
+                            <div class="inspection-card-body">
+                                <p class="small text-muted mb-2" style="font-size: 0.78rem;">{{ t('back_label_hint') }}</p>
+                                <div class="dropzone-box text-center p-3 rounded-3 position-relative" id="backDropzone">
+                                    <input type="file" name="back_image" id="backImageInput" class="dropzone-input" accept="image/png, image/jpeg, image/jpg, image/webp, image/bmp" capture="environment">
+                                    
+                                    <div class="dropzone-content py-2" id="backDropzoneContent">
+                                        <div class="mb-2">
+                                            <i class="bi bi-file-earmark-image-fill fs-1 text-secondary opacity-75"></i>
+                                        </div>
+                                        <div class="fw-bold text-dark mb-1" style="font-size: 0.92rem;">{{ t('back_dropzone_prompt') }}</div>
+                                        <div class="small text-muted mb-3" style="font-size: 0.74rem;">{{ t('back_optional_hint') }}</div>
+                                        
+                                        <div class="d-flex flex-wrap gap-2 justify-content-center" style="position:relative;z-index:20;">
+                                            <button type="button" class="btn btn-sm btn-secondary px-3 py-1.5 rounded-pill shadow-xs" id="backCameraBtn" onclick="event.stopPropagation();">
+                                                <i class="bi bi-camera-fill me-1"></i> {{ t('take_back_photo') }}
+                                            </button>
+                                            <label class="btn btn-sm btn-outline-secondary px-3 py-1.5 rounded-pill shadow-xs mb-0" style="cursor:pointer;">
+                                                <i class="bi bi-folder2-open me-1"></i> {{ t('browse_files') }}
+                                                <input type="file" id="backGalleryInput" accept="image/png,image/jpeg,image/jpg,image/webp,image/bmp" style="display:none;">
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="dropzone-preview d-none position-relative w-100" id="backPreviewBox">
+                                        <div class="preview-container mb-2">
+                                            <img src="" id="backPreviewImg" class="img-fluid preview-img" alt="Back Label Preview">
+                                        </div>
+                                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 p-1">
+                                            <div id="backFileName" class="text-start"></div>
+                                            <div class="d-flex gap-1.5" style="position:relative;z-index:20;">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2.5 rounded-pill" id="replaceBackBtn" title="Choose a different image"><i class="bi bi-arrow-repeat me-0.5"></i> Replace</button>
+                                                <button type="button" class="btn btn-sm btn-outline-warning text-dark py-1 px-2.5 rounded-pill" id="retakeBackBtn" title="Re-take camera photo"><i class="bi bi-camera me-0.5"></i> {{ t('retake_btn') }}</button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2.5 rounded-pill" id="removeBackBtn" title="Remove image">&times; {{ t('remove_btn') }}</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -472,29 +751,30 @@
 
                 <!-- Optional Officer Notes / Retailer Tag -->
                 <div class="mb-4">
-                    <label class="form-label fw-semibold text-dark small">
-                        <i class="bi bi-pencil-square me-1"></i> {{ t('officer_notes_label') }}
+                    <label class="form-label fw-semibold text-dark small d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-pencil-square me-1 text-primary"></i> {{ t('officer_notes_label') }}</span>
+                        <small class="text-muted">Optional Retailer / Market Reference</small>
                     </label>
-                    <input type="text" name="officer_notes" class="form-control form-control-sm" placeholder="{{ t('officer_notes_placeholder') }}">
+                    <input type="text" name="officer_notes" class="form-control" placeholder="{{ t('officer_notes_placeholder') }}">
                 </div>
 
                 <!-- Inspection Location / GPS Section (Preserved) -->
-                <div class="card border rounded-3 p-3 mb-4 bg-light shadow-xs" id="locationSection">
-                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-2">
+                <div class="card border rounded-3 p-3.5 mb-4 bg-light shadow-xs" id="locationSection">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-2.5">
                         <div>
                             <h6 class="fw-bold mb-0 text-navy d-flex align-items-center gap-2">
                                 <i class="bi bi-geo-alt-fill text-danger"></i>
-                                <span>{{ t('location_section_title') or 'Inspection Location' }}</span>
-                                <span class="badge bg-secondary-subtle text-secondary small fw-normal">GPS</span>
+                                <span>{{ t('location_section_title') or 'Field Inspection Metadata & Geolocation' }}</span>
+                                <span class="badge bg-secondary-subtle text-secondary small fw-normal font-monospace">GPS TAG</span>
                             </h6>
                             <small class="text-muted">{{ t('location_section_hint') or 'Optionally tag this inspection with GPS coordinates and market location' }}</small>
                         </div>
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold d-flex align-items-center gap-1 shadow-xs" id="detectLocationBtn">
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 fw-semibold d-flex align-items-center gap-1.5 shadow-xs" id="detectLocationBtn">
                                 <i class="bi bi-crosshair"></i>
                                 <span id="detectLocationBtnText">{{ t('detect_location_btn') or '📍 Detect My Location' }}</span>
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2 d-none shadow-xs" id="refreshLocationBtn" title="{{ t('refresh_location_btn') or 'Refresh Location' }}">
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 d-none shadow-xs" id="refreshLocationBtn" title="{{ t('refresh_location_btn') or 'Refresh Location' }}">
                                 <i class="bi bi-arrow-clockwise"></i>
                             </button>
                         </div>
@@ -509,21 +789,21 @@
                     <div id="locationDetailsContainer" class="d-none">
                         <div class="row g-2 mb-2">
                             <div class="col-sm-6">
-                                <div class="p-2 rounded-2 bg-white border small">
+                                <div class="p-2.5 rounded-2 bg-white border small">
                                     <div class="text-muted small"><i class="bi bi-compass me-1"></i>Coordinates &amp; Accuracy:</div>
                                     <div class="fw-bold text-dark font-monospace" id="locCoordsDisplay">--</div>
                                     <div class="text-muted small" id="locAccuracyDisplay">--</div>
                                 </div>
                             </div>
                             <div class="col-sm-6">
-                                <div class="p-2 rounded-2 bg-white border small">
+                                <div class="p-2.5 rounded-2 bg-white border small">
                                     <div class="text-muted small"><i class="bi bi-building me-1"></i>Locality &amp; Administrative Region:</div>
                                     <div class="fw-bold text-dark text-truncate" id="locRegionDisplay">--</div>
                                     <div class="text-muted small text-truncate" id="locPostcodeDisplay">--</div>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <div class="p-2 rounded-2 bg-white border small">
+                                <div class="p-2.5 rounded-2 bg-white border small">
                                     <div class="text-muted small"><i class="bi bi-signpost-2 me-1"></i>Full Postal Address:</div>
                                     <div class="text-dark fw-semibold" id="locAddressDisplay">--</div>
                                 </div>
@@ -542,22 +822,26 @@
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-navy btn-lg py-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" id="submitBtn">
                         <i class="bi bi-shield-check fs-5 text-warning"></i>
-                        <span>{{ t('analyze_btn') }}</span>
+                        <span>Start AI-Assisted Inspection</span>
                     </button>
                 </div>
             </form>
 
-            <!-- Processing Progress Indicator -->
-            <div class="mt-4 p-4 rounded-3 bg-light border d-none" id="progressIndicator">
+            <!-- Processing Progress Indicator (Workstation Console) -->
+            <div class="mt-4 p-4 rounded-3 processing-console-card d-none" id="progressIndicator">
+                <div class="scanning-radar-line mb-3"></div>
                 <div class="d-flex align-items-center gap-3 mb-3">
-                    <div class="spinner-border text-primary" role="status"></div>
+                    <div class="spinner-border text-warning" role="status" style="width: 2rem; height: 2rem;"></div>
                     <div>
-                        <h6 class="mb-0 fw-bold text-dark">{{ t('progress_title') }}</h6>
-                        <small class="text-muted" id="progressStepText">{{ t('progress_step1') }}</small>
+                        <h6 class="mb-0 fw-bold text-white">{{ t('progress_title') }}</h6>
+                        <small class="text-light-slate" id="progressStepText">{{ t('progress_step1') }}</small>
                     </div>
                 </div>
-                <div class="progress" style="height: 8px;">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" id="progressBar" style="width: 25%"></div>
+                <div class="progress bg-black bg-opacity-40" style="height: 10px; border-radius: 5px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" id="progressBar" style="width: 25%"></div>
+                </div>
+                <div class="mt-2 text-end">
+                    <small class="text-white-50 font-monospace" style="font-size: 0.7rem;">Processing high-resolution packaging label &bull; Please do not close this window</small>
                 </div>
             </div>
         </div>
@@ -573,7 +857,7 @@
             <div class="modal-header border-0 pb-0 pt-3 px-3">
                 <h6 class="modal-title text-white fw-bold d-flex align-items-center gap-2 mb-0">
                     <i class="bi bi-camera-fill text-warning"></i>
-                    <span id="cameraModalTitle">Take Photo</span>
+                    <span id="cameraModalTitle">{{ t('camera_title') }}</span>
                 </h6>
                 <button type="button" class="btn-close btn-close-white" id="cameraCloseBtn" aria-label="Close"></button>
             </div>
@@ -583,16 +867,19 @@
 
                 <!-- Live viewfinder -->
                 <div id="cameraViewfinder" class="position-relative w-100 mb-2 text-center">
-                    <video id="cameraVideo" autoplay playsinline muted
-                           class="rounded-3 w-100"
-                           style="max-height:60vh;object-fit:cover;background:#000;display:block;"></video>
+                    <div class="camera-viewfinder-box position-relative">
+                        <video id="cameraVideo" autoplay playsinline muted
+                               class="rounded-3 w-100"
+                               style="max-height:60vh;object-fit:cover;background:#000;display:block;"></video>
+                        <div class="camera-reticle" aria-hidden="true"></div>
+                    </div>
                     <!-- Capture button overlay -->
                     <div class="d-flex justify-content-center gap-3 mt-2">
                         <button type="button" class="btn btn-warning fw-bold px-4 py-2 rounded-pill shadow" id="captureBtn">
-                            <i class="bi bi-camera-fill me-1"></i> Capture Photo
+                            <i class="bi bi-camera-fill me-1"></i> {{ t('camera_capture') }}
                         </button>
                         <button type="button" class="btn btn-outline-light px-3 py-2 rounded-pill" id="cameraCancelBtn">
-                            Cancel
+                            {{ t('camera_cancel') }}
                         </button>
                     </div>
                 </div>
@@ -600,26 +887,24 @@
                 <!-- Permission denied message -->
                 <div id="cameraPermissionError" class="d-none text-center py-4">
                     <i class="bi bi-camera-video-off-fill fs-1 text-danger mb-3 d-block"></i>
-                    <p class="text-white fw-semibold mb-1">Camera permission was denied.</p>
+                    <p class="text-white fw-semibold mb-1">{{ t('camera_permission_denied') }}</p>
                     <p class="text-white-50 small mb-3">
-                        You can allow camera access in your browser settings, or use <strong>Browse Files</strong> instead.
+                        {{ t('camera_permission_hint')|safe }}
                     </p>
                     <button type="button" class="btn btn-outline-light rounded-pill px-4" id="cameraErrorCloseBtn">
-                        Close &amp; Use Gallery
+                        {{ t('camera_use_gallery')|safe }}
                     </button>
                 </div>
 
                 <!-- Not-secure context warning (HTTP) -->
                 <div id="cameraHttpWarning" class="d-none text-center py-4">
                     <i class="bi bi-shield-exclamation fs-1 text-warning mb-3 d-block"></i>
-                    <p class="text-white fw-semibold mb-1">Camera not available on HTTP.</p>
+                    <p class="text-white fw-semibold mb-1">{{ t('camera_http_warning') }}</p>
                     <p class="text-white-50 small mb-3">
-                        <code>getUserMedia</code> requires a <strong>secure context (HTTPS)</strong>.<br>
-                        You are accessing this page over plain HTTP (<code>http://10.103.2.155:5000</code>).<br>
-                        Please use <strong>Browse Files</strong> to select a photo from your gallery, or set up HTTPS — see instructions below.
+                        {{ t('camera_http_desc')|safe }}
                     </p>
                     <button type="button" class="btn btn-outline-light rounded-pill px-4" id="cameraHttpCloseBtn">
-                        Close &amp; Use Gallery
+                        {{ t('camera_use_gallery')|safe }}
                     </button>
                 </div>
 
@@ -630,13 +915,13 @@
                          style="max-height:55vh;object-fit:contain;background:#111;">
                     <div class="d-flex justify-content-center gap-2 flex-wrap">
                         <button type="button" class="btn btn-success fw-bold px-4 py-2 rounded-pill shadow" id="usePhotoBtn">
-                            <i class="bi bi-check-circle-fill me-1"></i> Use Photo
+                            <i class="bi bi-check-circle-fill me-1"></i> {{ t('camera_use_photo') }}
                         </button>
                         <button type="button" class="btn btn-outline-warning px-3 py-2 rounded-pill" id="retakeBtn">
-                            <i class="bi bi-arrow-counterclockwise me-1"></i> Retake
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> {{ t('retake_btn') }}
                         </button>
                         <button type="button" class="btn btn-outline-light px-3 py-2 rounded-pill" id="cancelAfterCaptureBtn">
-                            Cancel
+                            {{ t('camera_cancel') }}
                         </button>
                     </div>
                 </div>

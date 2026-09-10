@@ -3,73 +3,197 @@
 {% block title %}{{ t('compliance_index') }} | SmartPack-LM (SP-LM-{{ inspection.id }}){% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4">
-    <!-- Top Action & Status Bar -->
-    <div class="card border-0 shadow-sm mb-4 bg-white">
+<div class="container-fluid px-4 py-2">
+    {% set rules_eval = inspection.extracted_data.get('rule_evaluations', []) %}
+    {% set ext_fields = inspection.extracted_data.get('fields', {}) %}
+    {% set pass_count = rules_eval|selectattr('status', 'equalto', 'PASS')|list|length %}
+    {% set review_count = rules_eval|selectattr('status', 'equalto', 'REVIEW')|list|length %}
+    {% set fail_count = rules_eval|selectattr('status', 'equalto', 'FAIL')|list|length %}
+    {% set total_checks = rules_eval|length %}
+
+    <!-- ====================================================================
+         1. TOP INSPECTION REFERENCE & METADATA BAR
+         ==================================================================== -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 pb-2 border-bottom">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="badge bg-navy px-3 py-1.5 font-monospace fs-6">
+                <i class="bi bi-shield-check text-warning me-1"></i>SP-LM-{{ "%04d"|format(inspection.id) }}
+            </span>
+            <span class="text-muted small">
+                <i class="bi bi-calendar3 me-1"></i>{{ inspection.timestamp }}
+            </span>
+            {% if inspection.inspector_name %}
+            <span class="badge bg-light text-navy border px-2.5 py-1 small">
+                <i class="bi bi-person-badge-fill text-warning me-1"></i>{{ inspection.inspector_name }} ({{ inspection.inspector_badge }})
+            </span>
+            {% endif %}
+            {% if inspection.location_data and inspection.location_data.latitude %}
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small">
+                <i class="bi bi-geo-alt-fill me-1"></i>{{ inspection.location_data.latitude|round(4) }}, {{ inspection.location_data.longitude|round(4) }}
+            </span>
+            {% endif %}
+        </div>
+
+        <!-- Action Toolbar -->
+        <div class="d-flex flex-wrap align-items-center gap-2 action-toolbar">
+            {% if inspection.overall_status != 'COMPLIANT' %}
+            <a href="{{ url_for('new_complaint', inspection_id=inspection.id) }}" class="btn btn-sm btn-danger d-flex align-items-center gap-1 shadow-xs fw-semibold">
+                <i class="bi bi-shield-exclamation"></i>
+                <span>{{ t('register_grievance_btn') }}</span>
+            </a>
+            {% endif %}
+            <a href="{{ url_for('download_report', inspection_id=inspection.id, lang=current_lang) }}" class="btn btn-sm btn-navy d-flex align-items-center gap-1 shadow-xs fw-semibold">
+                <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+                <span>{{ t('download_pdf') }} ({{ current_lang|upper }})</span>
+            </a>
+            <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" id="printReportBtn">
+                <i class="bi bi-printer"></i>
+                <span>Print Report</span>
+            </button>
+            <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1">
+                <i class="bi bi-plus-circle"></i>
+                <span>{{ t('new_scan') }}</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         2. RESULT HERO / STATUS CARD
+         ==================================================================== -->
+    <div class="card result-hero-card border-0 shadow-sm mb-4 bg-white overflow-hidden">
         <div class="card-body p-4">
-            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
-                <div>
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <span class="badge bg-navy px-3 py-1 font-monospace">{{ t('inspection_ref') }}{{ "%04d"|format(inspection.id) }}</span>
-                        <span class="text-muted small"><i class="bi bi-clock-history me-1"></i>{{ inspection.timestamp }}</span>
+            <div class="row align-items-center gy-3">
+                <!-- Left: Commodity & Manufacturer identity -->
+                <div class="col-lg-5">
+                    <div class="text-uppercase small fw-bold text-muted letter-spacing-1 mb-1">
+                        <i class="bi bi-box-seam me-1"></i>Digital Packaging Inspection
                     </div>
-                    <h3 class="fw-bold mb-0 text-dark">{{ inspection.product_name }}</h3>
-                    <div class="text-muted small d-flex align-items-center gap-2 flex-wrap">
-                        <span><i class="bi bi-building me-1"></i>{{ inspection.manufacturer }}</span>
-                        {% if inspection.inspector_name %}
-                        <span>&bull;</span>
-                        <span class="text-navy fw-semibold"><i class="bi bi-person-badge-fill me-1 text-warning"></i>Inspector: {{ inspection.inspector_name }} ({{ inspection.inspector_badge }})</span>
-                        {% endif %}
+                    <h3 class="fw-extrabold text-navy mb-1">{{ inspection.product_name }}</h3>
+                    <div class="text-muted small mb-2">
+                        <i class="bi bi-building me-1"></i><strong>Manufacturer / Packer:</strong> {{ inspection.manufacturer }}
                     </div>
-                    {% if inspection.location_data and inspection.location_data.latitude %}
-                    <div class="mt-2 d-flex flex-wrap align-items-center gap-2 small">
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
-                            <i class="bi bi-geo-alt-fill me-1"></i>{{ inspection.location_data.latitude|round(4) }}, {{ inspection.location_data.longitude|round(4) }}
-                        </span>
-                        {% if inspection.location_data.address %}
-                        <span class="text-muted text-truncate" style="max-width: 480px;" title="{{ inspection.location_data.address }}">
-                            <i class="bi bi-pin-map me-1"></i>{{ inspection.location_data.address }}
-                        </span>
-                        {% endif %}
+                    {% if inspection.location_data and inspection.location_data.address %}
+                    <div class="text-muted small text-truncate" style="max-width: 500px;" title="{{ inspection.location_data.address }}">
+                        <i class="bi bi-pin-map text-danger me-1"></i>{{ inspection.location_data.address }}
                     </div>
                     {% endif %}
                 </div>
 
-                <!-- Status & Score Badges -->
-                <div class="d-flex flex-wrap align-items-center gap-3">
-                    <div class="score-card-box text-center px-4 py-2 rounded-3 border bg-light">
-                        <div class="score-label small text-muted text-uppercase fw-semibold">{{ t('compliance_index') }}</div>
-                        <div class="score-val fw-extrabold fs-3 {% if inspection.compliance_score >= 85 %}text-success{% elif inspection.compliance_score >= 60 %}text-warning{% else %}text-danger{% endif %}">
+                <!-- Center: Compliance Status Banner with Narrative -->
+                <div class="col-lg-4">
+                    <div class="p-3 rounded-3 {% if inspection.overall_status == 'COMPLIANT' %}status-banner-compliant{% elif inspection.overall_status == 'NEEDS REVIEW' %}status-banner-review{% else %}status-banner-noncompliant{% endif %}">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            {% if inspection.overall_status == 'COMPLIANT' %}
+                                <i class="bi bi-shield-fill-check fs-3 text-success"></i>
+                                <div>
+                                    <span class="badge bg-success text-white px-2.5 py-1 text-uppercase fw-bold">{{ get_translated_status('COMPLIANT') }}</span>
+                                    <div class="small fw-semibold mt-1">Rule 6(1) Verified Compliant</div>
+                                </div>
+                            {% elif inspection.overall_status == 'NEEDS REVIEW' %}
+                                <i class="bi bi-shield-fill-exclamation fs-3 text-warning"></i>
+                                <div>
+                                    <span class="badge bg-warning text-dark px-2.5 py-1 text-uppercase fw-bold">{{ get_translated_status('NEEDS REVIEW') }}</span>
+                                    <div class="small fw-semibold mt-1">Manual Verification Required</div>
+                                </div>
+                            {% else %}
+                                <i class="bi bi-shield-fill-x fs-3 text-danger"></i>
+                                <div>
+                                    <span class="badge bg-danger text-white px-2.5 py-1 text-uppercase fw-bold">{{ get_translated_status('NON-COMPLIANT') }}</span>
+                                    <div class="small fw-semibold mt-1">Statutory Violation Detected</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <p class="small mb-0 mt-2 opacity-90" style="line-height: 1.35;">
+                            {% if inspection.overall_status == 'COMPLIANT' %}
+                                All evaluated statutory declarations passed the configured verification checks under Rule 6(1) of PCR 2011.
+                            {% elif inspection.overall_status == 'NEEDS REVIEW' %}
+                                One or more declarations are ambiguous or missing specific statutory components. Physical package verification recommended.
+                            {% else %}
+                                Mandatory statutory declarations are missing or violate the Legal Metrology (Packaged Commodities) Rules, 2011.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right: Numerical Score Box -->
+                <div class="col-lg-3 text-lg-end text-center">
+                    <div class="score-display-card p-3 d-inline-block text-center" style="min-width: 170px;">
+                        <div class="text-uppercase small text-muted fw-bold">{{ t('compliance_index') }}</div>
+                        <div class="fs-1 fw-extrabold {% if inspection.compliance_score >= 85 %}score-num-compliant{% elif inspection.compliance_score >= 60 %}score-num-review{% else %}score-num-noncompliant{% endif %}">
                             {{ inspection.compliance_score }}%
                         </div>
+                        <div class="small text-muted font-monospace" style="font-size: 0.75rem;">
+                            {{ pass_count }}/{{ total_checks }} Checks Passed
+                        </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    <div class="status-badge-box text-center px-4 py-2 rounded-3 text-white fw-bold fs-5 shadow-xs {% if inspection.overall_status == 'COMPLIANT' %}bg-success{% elif inspection.overall_status == 'NEEDS REVIEW' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
-                        {% if inspection.overall_status == 'COMPLIANT' %}
-                            <i class="bi bi-shield-fill-check me-1"></i> {{ get_translated_status('COMPLIANT') }}
-                        {% elif inspection.overall_status == 'NEEDS REVIEW' %}
-                            <i class="bi bi-shield-fill-exclamation me-1"></i> {{ get_translated_status('NEEDS REVIEW') }}
-                        {% else %}
-                            <i class="bi bi-shield-fill-x me-1"></i> {{ get_translated_status('NON-COMPLIANT') }}
-                        {% endif %}
+    <!-- ====================================================================
+         3. INSPECTION SUMMARY KPI ROW
+         ==================================================================== -->
+    <div class="row g-3 mb-4">
+        <!-- Total Checks -->
+        <div class="col-6 col-md-3">
+            <div class="result-kpi-card p-3 border-start border-4 border-navy h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">Total Checks</div>
+                        <h3 class="fw-bold text-navy mb-0 mt-1">{{ total_checks }}</h3>
+                        <small class="text-muted">Rule 6(1) Declarations</small>
                     </div>
+                    <div class="result-kpi-icon bg-navy-subtle text-navy">
+                        <i class="bi bi-list-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                    <!-- Action Buttons -->
-                    <div class="d-flex flex-wrap gap-2">
-                        {% if inspection.overall_status != 'COMPLIANT' %}
-                        <a href="{{ url_for('new_complaint', inspection_id=inspection.id) }}" class="btn btn-danger d-flex align-items-center gap-1 shadow-sm fw-semibold animate__animated animate__pulse animate__infinite">
-                            <i class="bi bi-shield-exclamation fs-5"></i>
-                            <span>Register Grievance / File Complaint</span>
-                        </a>
-                        {% endif %}
-                        <a href="{{ url_for('download_report', inspection_id=inspection.id, lang=current_lang) }}" class="btn btn-navy d-flex align-items-center gap-1 shadow-sm">
-                            <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
-                            <span class="fw-semibold">{{ t('download_pdf') }} ({{ current_lang|upper }})</span>
-                        </a>
-                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary d-flex align-items-center gap-1">
-                            <i class="bi bi-plus-circle"></i>
-                            <span>{{ t('new_scan') }}</span>
-                        </a>
+        <!-- Passed Checks -->
+        <div class="col-6 col-md-3">
+            <div class="result-kpi-card p-3 border-start border-4 border-success h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">Passed Checks</div>
+                        <h3 class="fw-bold text-success mb-0 mt-1">{{ pass_count }}</h3>
+                        <small class="text-success fw-semibold">{{ ((pass_count / (total_checks or 1)) * 100)|round(0)|int }}% compliant</small>
+                    </div>
+                    <div class="result-kpi-icon bg-success-subtle text-success">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Needs Review -->
+        <div class="col-6 col-md-3">
+            <div class="result-kpi-card p-3 border-start border-4 border-warning h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">Needs Review</div>
+                        <h3 class="fw-bold text-warning mb-0 mt-1">{{ review_count }}</h3>
+                        <small class="text-warning fw-semibold">Manual scrutiny</small>
+                    </div>
+                    <div class="result-kpi-icon bg-warning-subtle text-warning">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Non-Compliant / Missing -->
+        <div class="col-6 col-md-3">
+            <div class="result-kpi-card p-3 border-start border-4 border-danger h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">Violations</div>
+                        <h3 class="fw-bold text-danger mb-0 mt-1">{{ fail_count }}</h3>
+                        <small class="text-danger fw-semibold">Actionable</small>
+                    </div>
+                    <div class="result-kpi-icon bg-danger-subtle text-danger">
+                        <i class="bi bi-x-circle-fill"></i>
                     </div>
                 </div>
             </div>
@@ -78,42 +202,42 @@
 
     <!-- Main Two-Column View -->
     <div class="row g-4">
-        <!-- Left: Visual Evidence & Image Tabs -->
+        <!-- ================================================================
+             LEFT COLUMN: VISUAL EVIDENCE & IMAGE TABS
+             ================================================================ -->
         <div class="col-lg-5">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
-                            <i class="bi bi-crosshair text-primary fs-5"></i>
-                            {{ t('visual_evidence') }}
-                        </h6>
-                        <span class="badge bg-light text-dark border">{{ t('hero_pill_evidence') }}</span>
-                    </div>
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
+                        <i class="bi bi-crosshair text-primary fs-5"></i>
+                        {{ t('visual_evidence') }}
+                    </h6>
+                    <span class="badge bg-light text-dark border">{{ t('hero_pill_evidence') }}</span>
                 </div>
                 <div class="card-body p-3">
                     <!-- Nav Tabs for Images -->
                     <ul class="nav nav-pills nav-fill mb-3 bg-light p-1 rounded-3" id="evidenceTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active py-2 small fw-semibold" id="annotated-tab" data-bs-toggle="tab" data-bs-target="#annotatedView" type="button">
+                            <button class="nav-link active py-2 small fw-semibold" id="annotated-tab" data-bs-toggle="tab" data-bs-target="#annotatedView" type="button" role="tab" aria-selected="true">
                                 <i class="bi bi-bounding-box me-1"></i> {{ t('tab_evidence_map') }}
                             </button>
                         </li>
                         {% if inspection.image_paths and inspection.image_paths.front %}
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link py-2 small fw-semibold" id="front-tab" data-bs-toggle="tab" data-bs-target="#frontView" type="button">
-                                <i class="bi bi-image me-1"></i> {{ t('tab_front_label') }}
+                            <button class="nav-link py-2 small fw-semibold" id="front-tab" data-bs-toggle="tab" data-bs-target="#frontView" type="button" role="tab" aria-selected="false">
+                                <i class="bi bi-image me-1"></i> Front (PDP)
                             </button>
                         </li>
                         {% endif %}
                         {% if inspection.image_paths and inspection.image_paths.back %}
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link py-2 small fw-semibold" id="back-tab" data-bs-toggle="tab" data-bs-target="#backView" type="button">
-                                <i class="bi bi-image-fill me-1"></i> {{ t('tab_back_label') }}
+                            <button class="nav-link py-2 small fw-semibold" id="back-tab" data-bs-toggle="tab" data-bs-target="#backView" type="button" role="tab" aria-selected="false">
+                                <i class="bi bi-image-fill me-1"></i> Back (Panel)
                             </button>
                         </li>
                         {% endif %}
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link py-2 small fw-semibold" id="ocr-tab" data-bs-toggle="tab" data-bs-target="#ocrView" type="button">
+                            <button class="nav-link py-2 small fw-semibold" id="ocr-tab" data-bs-toggle="tab" data-bs-target="#ocrView" type="button" role="tab" aria-selected="false">
                                 <i class="bi bi-file-text me-1"></i> {{ t('tab_ocr_text') }}
                             </button>
                         </li>
@@ -122,15 +246,15 @@
                     <!-- Tab Content -->
                     <div class="tab-content" id="evidenceTabContent">
                         <!-- 1. AI Evidence Annotated Image -->
-                        <div class="tab-pane fade show active text-center" id="annotatedView">
+                        <div class="tab-pane fade show active text-center" id="annotatedView" role="tabpanel">
                             {% if inspection.evidence_image_path %}
-                            <div class="evidence-img-container p-2 bg-dark rounded-3 shadow-xs">
-                                <img src="/uploads/{{ inspection.evidence_image_path|basename }}" class="img-fluid rounded-2 zoomable-img" alt="AI Evidence Map">
+                            <div class="evidence-img-container p-2 shadow-xs" id="evidenceImgBox" title="Click to zoom in/out">
+                                <img src="/uploads/{{ inspection.evidence_image_path|basename }}" class="zoomable-img" id="annotatedImg" alt="AI Evidence Map">
                             </div>
-                            <div class="mt-2 d-flex justify-content-center gap-3 small text-muted">
-                                <span><span class="badge bg-success">&nbsp;</span> {{ t('badge_pass') }}</span>
-                                <span><span class="badge bg-warning text-dark">&nbsp;</span> {{ t('badge_review') }}</span>
-                                <span><span class="badge bg-danger">&nbsp;</span> {{ t('badge_fail') }}</span>
+                            <div class="mt-1 text-center">
+                                <small class="text-muted" style="font-size: 0.72rem;">
+                                    <i class="bi bi-zoom-in me-1"></i>Click image to toggle zoom (1.6&times;)
+                                </small>
                             </div>
                             {% else %}
                             <div class="p-5 text-muted bg-light rounded-3">{{ t('visual_evidence') }}</div>
@@ -139,24 +263,30 @@
 
                         <!-- 2. Original Front Label -->
                         {% if inspection.image_paths and inspection.image_paths.front %}
-                        <div class="tab-pane fade text-center" id="frontView">
-                            <div class="evidence-img-container p-2 bg-light rounded-3 border">
-                                <img src="/uploads/{{ inspection.image_paths.front|basename }}" class="img-fluid rounded-2" alt="Original Front Label">
+                        <div class="tab-pane fade text-center" id="frontView" role="tabpanel">
+                            <div class="evidence-img-container p-2 bg-light border">
+                                <img src="/uploads/{{ inspection.image_paths.front|basename }}" class="img-fluid rounded-2" alt="Original Front Label (Principal Display Panel)">
+                            </div>
+                            <div class="mt-1 text-center">
+                                <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Front Label &bull; Principal Display Panel (PDP)</small>
                             </div>
                         </div>
                         {% endif %}
 
                         <!-- 3. Original Back Label -->
                         {% if inspection.image_paths and inspection.image_paths.back %}
-                        <div class="tab-pane fade text-center" id="backView">
-                            <div class="evidence-img-container p-2 bg-light rounded-3 border">
-                                <img src="/uploads/{{ inspection.image_paths.back|basename }}" class="img-fluid rounded-2" alt="Original Back Label">
+                        <div class="tab-pane fade text-center" id="backView" role="tabpanel">
+                            <div class="evidence-img-container p-2 bg-light border">
+                                <img src="/uploads/{{ inspection.image_paths.back|basename }}" class="img-fluid rounded-2" alt="Original Back Label (Statutory Information Panel)">
+                            </div>
+                            <div class="mt-1 text-center">
+                                <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Back Label &bull; Statutory Information Panel</small>
                             </div>
                         </div>
                         {% endif %}
 
                         <!-- 4. Raw OCR Text -->
-                        <div class="tab-pane fade" id="ocrView">
+                        <div class="tab-pane fade" id="ocrView" role="tabpanel">
                             <div class="bg-dark text-light p-3 rounded-3 font-monospace small ocr-text-terminal" style="max-height: 420px; overflow-y: auto;">
                                 <div class="text-warning mb-2 small">// SMARTPACK-LM OCR STREAM</div>
                                 <pre class="text-light mb-0" style="white-space: pre-wrap;">{{ inspection.extracted_data.ocr_raw_text or "OCR tokens extracted and validated." }}</pre>
@@ -164,24 +294,54 @@
                         </div>
                     </div>
 
+                    <!-- Evidence Legend -->
+                    <div class="evidence-legend-box mt-3 small">
+                        <div class="fw-bold text-navy mb-1 small text-uppercase letter-spacing-1">
+                            <i class="bi bi-palette me-1"></i>Evidence Legend &amp; Source Attribution
+                        </div>
+                        <div class="d-flex flex-wrap gap-3 text-muted">
+                            <span class="d-flex align-items-center gap-1.5">
+                                <span class="legend-dot bg-success"></span>
+                                <span>Passed Declaration</span>
+                            </span>
+                            <span class="d-flex align-items-center gap-1.5">
+                                <span class="legend-dot bg-warning"></span>
+                                <span>Review Required</span>
+                            </span>
+                            <span class="d-flex align-items-center gap-1.5">
+                                <span class="legend-dot bg-danger"></span>
+                                <span>Violation / Missing</span>
+                            </span>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 mt-2 pt-1 border-top">
+                            <span class="badge-source-front"><i class="bi bi-card-heading me-1"></i>FRONT (PDP)</span>
+                            <span class="badge-source-back"><i class="bi bi-card-text me-1"></i>BACK (PANEL)</span>
+                        </div>
+                    </div>
+
                     <!-- OCR Engine Badge -->
                     <div class="mt-3 p-2 rounded-2 bg-light border d-flex justify-content-between align-items-center small">
                         <span class="text-muted"><i class="bi bi-cpu me-1"></i> {{ t('active_ocr_engine') }}</span>
-                        <span class="badge bg-secondary">{{ inspection.extracted_data.ocr_engine or "PaddleOCR / Smart Fallback" }}</span>
+                        <span class="badge bg-secondary font-monospace">{{ inspection.extracted_data.ocr_engine or "Tesseract 5.5 / Multi-Pass" }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right: Legal Metrology Statutory Declarations Audit Matrix -->
+        <!-- ================================================================
+             RIGHT COLUMN: STATUTORY DECLARATIONS AUDIT MATRIX & EXPLAINABILITY
+             ================================================================ -->
         <div class="col-lg-7">
             <!-- Detected Violations Callout (if any) -->
             {% if inspection.detected_issues and inspection.detected_issues|length > 0 %}
             <div class="card border-0 shadow-sm mb-4 border-start border-danger border-4 bg-danger bg-opacity-10">
                 <div class="card-body p-3">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <i class="bi bi-exclamation-octagon-fill text-danger fs-5"></i>
-                        <h6 class="mb-0 fw-bold text-danger">{{ t('violations_detected') }} ({{ inspection.detected_issues|length }})</h6>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-exclamation-octagon-fill text-danger fs-5"></i>
+                            <h6 class="mb-0 fw-bold text-danger">{{ t('violations_detected') }} ({{ inspection.detected_issues|length }})</h6>
+                        </div>
+                        <span class="badge bg-danger text-white">Action Required</span>
                     </div>
                     <div class="list-group list-group-flush bg-transparent">
                         {% for issue in inspection.detected_issues %}
@@ -190,10 +350,10 @@
                                 <span class="badge {% if issue.severity == 'CRITICAL' %}bg-danger{% elif issue.severity == 'HIGH' %}bg-danger bg-opacity-75{% else %}bg-warning text-dark{% endif %} text-uppercase small mt-1">
                                     {{ issue.severity }}
                                 </span>
-                                <div>
+                                <div class="flex-grow-1">
                                     <div class="fw-bold text-dark">{{ issue.title }}</div>
                                     <div class="small text-muted">{{ issue.description }}</div>
-                                    <div class="small text-primary fst-italic"><i class="bi bi-bookmark-fill me-1"></i>{{ issue.rule_reference }}</div>
+                                    <div class="small text-primary font-monospace mt-0.5"><i class="bi bi-bookmark-fill me-1"></i>{{ issue.rule_reference }}</div>
                                 </div>
                             </div>
                         </div>
@@ -202,7 +362,7 @@
                     <div class="mt-3 pt-2 border-top border-danger border-opacity-25 d-flex justify-content-between align-items-center">
                         <small class="text-danger fw-semibold"><i class="bi bi-info-circle me-1"></i>Actionable under Section 36 of Legal Metrology Act, 2009</small>
                         <a href="{{ url_for('new_complaint', inspection_id=inspection.id) }}" class="btn btn-sm btn-danger px-3 rounded-pill fw-bold shadow-xs">
-                            <i class="bi bi-megaphone-fill me-1"></i> Register Grievance
+                            <i class="bi bi-megaphone-fill me-1"></i> {{ t('register_grievance_btn') }}
                         </a>
                     </div>
                 </div>
@@ -212,10 +372,13 @@
             <!-- Statutory Declarations Checklist Card -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
-                        <i class="bi bi-clipboard2-check-fill text-success fs-5"></i>
-                        {{ t('audit_matrix_title') }}
-                    </h6>
+                    <div>
+                        <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
+                            <i class="bi bi-clipboard2-check-fill text-success fs-5"></i>
+                            {{ t('audit_matrix_title') }}
+                        </h6>
+                        <small class="text-muted">Verification against Legal Metrology (Packaged Commodities) Rules, 2011</small>
+                    </div>
                     <button type="button" class="btn btn-sm btn-outline-dark" data-bs-toggle="modal" data-bs-target="#jsonModal">
                         <i class="bi bi-code-slash me-1"></i> {{ t('raw_json_btn') }}
                     </button>
@@ -225,45 +388,91 @@
                         <table class="table table-hover align-middle mb-0 statutory-table">
                             <thead class="table-light small text-uppercase">
                                 <tr>
-                                    <th class="ps-3">{{ t('th_rule') }}</th>
-                                    <th>{{ t('th_declaration') }}</th>
-                                    <th class="text-center">{{ t('th_confidence') }}</th>
-                                    <th class="text-center pe-3">{{ t('th_compliance') }}</th>
+                                    <th class="ps-3" style="width: 32%;">{{ t('th_rule') }}</th>
+                                    <th style="width: 38%;">Declaration &amp; Findings</th>
+                                    <th class="text-center" style="width: 15%;">Source</th>
+                                    <th class="text-center pe-3" style="width: 15%;">{{ t('th_compliance') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% set rules_eval = inspection.extracted_data.get('rule_evaluations', []) %}
                                 {% if rules_eval %}
                                     {% for r in rules_eval %}
-                                    <tr>
-                                        <td class="ps-3 py-3">
+                                    {% set f_key = r.field %}
+                                    {% set f_data = ext_fields.get(f_key, {}) %}
+                                    <tr class="statutory-row">
+                                        <!-- Rule & Statutory Citation -->
+                                        <td class="ps-3 py-3 align-top">
                                             <div class="fw-bold text-dark">{{ r.title }}</div>
                                             <div class="small text-muted font-monospace">{{ r.rule_reference.split(' of ')[0] }}</div>
+                                            {% if r.severity %}
+                                            <span class="badge {% if r.severity == 'CRITICAL' %}bg-danger-subtle text-danger border border-danger-subtle{% elif r.severity == 'HIGH' %}bg-warning-subtle text-warning border border-warning-subtle{% else %}bg-secondary-subtle text-secondary border border-secondary-subtle{% endif %} mt-1" style="font-size: 0.65rem;">
+                                                {{ r.severity }}
+                                            </span>
+                                            {% endif %}
                                         </td>
-                                        <td>
+
+                                        <!-- Extracted Value & Explainability -->
+                                        <td class="py-3 align-top">
                                             {% if r.extracted_value %}
                                                 <div class="fw-semibold text-dark text-break">{{ r.extracted_value }}</div>
-                                                <div class="small text-muted">{{ r.findings }}</div>
+                                                <!-- "Why did it receive this status?" -->
+                                                {% if r.findings %}
+                                                <div class="finding-callout">
+                                                    <i class="bi bi-info-circle me-1"></i><strong>Finding:</strong> {{ r.findings }}
+                                                </div>
+                                                {% endif %}
+                                                {% if r.corrective_action %}
+                                                <div class="action-callout">
+                                                    <i class="bi bi-exclamation-circle me-1"></i><strong>Inspector Guidance:</strong> {{ r.corrective_action }}
+                                                </div>
+                                                {% endif %}
                                             {% else %}
-                                                <span class="text-danger fw-semibold fst-italic">{{ t('not_detected') }}</span>
+                                                <div>
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle fst-italic px-2 py-1">
+                                                        <i class="bi bi-dash-circle me-1"></i>{{ t('not_detected') }}
+                                                    </span>
+                                                </div>
+                                                {% if r.findings %}
+                                                <div class="finding-callout text-danger border-danger">
+                                                    <i class="bi bi-exclamation-triangle me-1"></i>{{ r.findings }}
+                                                </div>
+                                                {% endif %}
+                                                {% if r.corrective_action %}
+                                                <div class="action-callout">
+                                                    <i class="bi bi-wrench me-1"></i><strong>Action:</strong> {{ r.corrective_action }}
+                                                </div>
+                                                {% endif %}
                                             {% endif %}
                                         </td>
-                                        <td class="text-center">
-                                            {% if r.confidence > 0 %}
-                                                <span class="badge bg-light text-dark border">{{ (r.confidence * 100)|int }}%</span>
+
+                                        <!-- Evidence Source & Confidence -->
+                                        <td class="text-center py-3 align-top">
+                                            {% if f_data.get('source') == 'back' %}
+                                                <span class="badge-source-back d-inline-block mb-1">BACK</span>
                                             {% else %}
-                                                <span class="text-muted small">&mdash;</span>
+                                                <span class="badge-source-front d-inline-block mb-1">FRONT</span>
                                             {% endif %}
+                                            <div>
+                                                {% if r.confidence > 0 %}
+                                                    <span class="badge bg-light text-dark border font-monospace" style="font-size: 0.72rem;">{{ (r.confidence * 100)|int }}%</span>
+                                                {% else %}
+                                                    <span class="text-muted small">&mdash;</span>
+                                                {% endif %}
+                                            </div>
                                         </td>
-                                        <td class="text-center pe-3">
+
+                                        <!-- Compliance Status -->
+                                        <td class="text-center pe-3 py-3 align-top">
                                             {% if r.status == 'PASS' %}
-                                                <span class="badge bg-success px-3 py-2"><i class="bi bi-check-lg me-1"></i> {{ get_translated_badge('PASS') }}</span>
+                                                <span class="badge bg-success px-2.5 py-1.5"><i class="bi bi-check-lg me-1"></i> {{ get_translated_badge('PASS') }}</span>
                                             {% elif r.status == 'REVIEW' %}
-                                                <span class="badge bg-warning text-dark px-2 py-2"><i class="bi bi-exclamation-circle me-1"></i> {{ get_translated_badge('REVIEW') }}</span>
+                                                <span class="badge bg-warning text-dark px-2.5 py-1.5"><i class="bi bi-exclamation-circle me-1"></i> {{ get_translated_badge('REVIEW') }}</span>
+                                                <div class="text-warning-emphasis small mt-1" style="font-size: 0.68rem;">Verify Label</div>
                                             {% elif r.status == 'FAIL' %}
-                                                <span class="badge bg-danger px-3 py-2"><i class="bi bi-x-lg me-1"></i> {{ get_translated_badge('FAIL') }}</span>
+                                                <span class="badge bg-danger px-2.5 py-1.5"><i class="bi bi-x-lg me-1"></i> {{ get_translated_badge('FAIL') }}</span>
+                                                <div class="text-danger small mt-1" style="font-size: 0.68rem;">Violation</div>
                                             {% else %}
-                                                <span class="badge bg-secondary px-2 py-2">N/A</span>
+                                                <span class="badge bg-secondary px-2 py-1.5">N/A</span>
                                             {% endif %}
                                         </td>
                                     </tr>
@@ -272,7 +481,7 @@
                                     <tr>
                                         <td class="ps-3 fw-bold">Manufacturer / Packer (Rule 6.1.a)</td>
                                         <td>{{ inspection.manufacturer }}</td>
-                                        <td class="text-center"><span class="badge bg-light text-dark border">90%</span></td>
+                                        <td class="text-center"><span class="badge-source-front">FRONT</span></td>
                                         <td class="text-center pe-3"><span class="badge bg-success">{{ get_translated_badge('PASS') }}</span></td>
                                     </tr>
                                 {% endif %}
@@ -288,22 +497,22 @@
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h6 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
                         <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
-                        Inspection Geolocation &amp; Market Site
+                        {{ t('inspection_geolocation_title')|safe }}
                     </h6>
                     <span class="badge bg-light text-dark border font-monospace">{{ inspection.location_data.latitude|round(5) }}, {{ inspection.location_data.longitude|round(5) }}</span>
                 </div>
                 <div class="card-body p-3">
                     <div class="row g-2 mb-3">
                         <div class="col-md-6">
-                            <small class="text-muted d-block"><i class="bi bi-signpost-2 me-1"></i>Postal Address:</small>
-                            <span class="fw-semibold text-dark">{{ inspection.location_data.address or "Address not resolved" }}</span>
+                            <small class="text-muted d-block"><i class="bi bi-signpost-2 me-1"></i>{{ t('postal_address_label') }}</small>
+                            <span class="fw-semibold text-dark">{{ inspection.location_data.address or t('address_not_resolved') }}</span>
                         </div>
                         <div class="col-md-3">
-                            <small class="text-muted d-block"><i class="bi bi-compass me-1"></i>GPS Accuracy:</small>
-                            <span class="fw-semibold text-dark">{% if inspection.location_data.accuracy %}&plusmn;{{ inspection.location_data.accuracy|round(1) }} meters{% else %}Standard{% endif %}</span>
+                            <small class="text-muted d-block"><i class="bi bi-compass me-1"></i>{{ t('gps_accuracy_label') }}</small>
+                            <span class="fw-semibold text-dark">{% if inspection.location_data.accuracy %}&plusmn;{{ inspection.location_data.accuracy|round(1) }} meters{% else %}{{ t('standard_accuracy') }}{% endif %}</span>
                         </div>
                         <div class="col-md-3">
-                            <small class="text-muted d-block"><i class="bi bi-clock-history me-1"></i>Fix Time:</small>
+                            <small class="text-muted d-block"><i class="bi bi-clock-history me-1"></i>{{ t('fix_time_label') }}</small>
                             <span class="fw-semibold text-dark">{{ inspection.location_data.timestamp or inspection.timestamp }}</span>
                         </div>
                     </div>
@@ -312,11 +521,12 @@
             </div>
             {% endif %}
 
-            <!-- Mandatory Legal Notice -->
-            <div class="p-3 rounded-3 bg-light border d-flex gap-2 align-items-center">
-                <i class="bi bi-shield-exclamation text-secondary fs-4"></i>
+            <!-- Mandatory Legal & Decision-Support Advisory Notice -->
+            <div class="p-3 rounded-3 advisory-disclaimer-card d-flex gap-3 align-items-start">
+                <i class="bi bi-shield-check text-navy fs-4 mt-0.5"></i>
                 <div class="small text-muted">
-                    <strong>{{ t('statutory_note_title') }}</strong> {{ t('statutory_note_desc') }}
+                    <strong class="text-navy d-block mb-1">{{ t('statutory_note_title') }} &bull; Legal Metrology Act, 2009 &amp; PCR 2011</strong>
+                    SmartPack-LM provides AI-assisted packaging inspection and evidence organization for decision support. Final legal determination, enforcement compounding, and notice issuance remain under the statutory jurisdiction of the authorized Legal Metrology officer.
                 </div>
             </div>
         </div>
@@ -324,12 +534,12 @@
 </div>
 
 <!-- Raw JSON Modal -->
-<div class="modal fade" id="jsonModal" tabindex="-1">
+<div class="modal fade" id="jsonModal" tabindex="-1" aria-labelledby="jsonModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title font-monospace"><i class="bi bi-braces me-2"></i>{{ t('json_modal_title') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title font-monospace" id="jsonModalTitle"><i class="bi bi-braces me-2"></i>{{ t('json_modal_title') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body bg-dark text-light p-3">
                 <pre class="mb-0 text-success font-monospace small"><code>{{ inspection|tojson(indent=2) }}</code></pre>
@@ -343,9 +553,26 @@
 {% endblock %}
 
 {% block extra_scripts %}
-{% if inspection.location_data and inspection.location_data.latitude %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // 1. Evidence Image Click-to-Zoom Toggle
+    const imgBox = document.getElementById('evidenceImgBox');
+    if (imgBox) {
+        imgBox.addEventListener('click', function () {
+            imgBox.classList.toggle('is-zoomed');
+        });
+    }
+
+    // 2. Print Report Button Trigger
+    const printBtn = document.getElementById('printReportBtn');
+    if (printBtn) {
+        printBtn.addEventListener('click', function () {
+            window.print();
+        });
+    }
+
+    // 3. Location Map Initialization (if present)
+    {% if inspection.location_data and inspection.location_data.latitude %}
     const lat = {{ inspection.location_data.latitude }};
     const lon = {{ inspection.location_data.longitude }};
     const mapEl = document.getElementById('resultLocationMap');
@@ -359,7 +586,7 @@ document.addEventListener('DOMContentLoaded', function () {
         marker.bindPopup("<b>Inspection Site</b><br>{{ inspection.product_name|escape }}<br>{{ (inspection.location_data.address or '')|escape }}").openPopup();
         setTimeout(function() { map.invalidateSize(); }, 300);
     }
+    {% endif %}
 });
 </script>
-{% endif %}
 {% endblock %}

@@ -11,16 +11,16 @@
                 <span class="badge bg-warning text-dark fw-bold">Admin Console</span>
                 <span class="text-muted small">User Management &amp; Access Directory</span>
             </div>
-            <h2 class="fw-bold text-navy mb-0">Registered Portal Users &amp; Citizen Accounts</h2>
+            <h2 class="fw-bold text-navy mb-0">{{ t('admin_users_title')|safe }}</h2>
         </div>
         <div class="d-flex gap-2">
             <a href="{{ url_for('manage_inspectors') }}" class="btn btn-outline-primary d-flex align-items-center gap-1 shadow-sm">
                 <i class="bi bi-shield-lock-fill"></i>
-                <span>Manage Inspectors</span>
+                <span>{{ t('nav_manage_inspectors') }}</span>
             </a>
             <a href="{{ url_for('dashboard') }}" class="btn btn-navy d-flex align-items-center gap-1 shadow-sm">
                 <i class="bi bi-speedometer2 text-warning"></i>
-                <span>Dashboard</span>
+                <span>{{ t('nav_dashboard') }}</span>
             </a>
         </div>
     </div>
@@ -31,7 +31,7 @@
             <div class="card border-0 shadow-sm p-3 border-start border-4 border-primary">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <div class="text-muted small text-uppercase fw-semibold">Total Accounts</div>
+                        <div class="text-muted small text-uppercase fw-semibold">{{ t('lbl_total_accounts') }}</div>
                         <div class="fs-4 fw-bold text-navy">{{ counts.total }}</div>
                     </div>
                     <div class="bg-primary-subtle text-primary p-2 rounded-circle">
@@ -44,7 +44,7 @@
             <div class="card border-0 shadow-sm p-3 border-start border-4 border-success">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <div class="text-muted small text-uppercase fw-semibold">Citizens (USER)</div>
+                        <div class="text-muted small text-uppercase fw-semibold">{{ t('lbl_citizens') }}</div>
                         <div class="fs-4 fw-bold text-success">{{ counts.user }}</div>
                     </div>
                     <div class="bg-success-subtle text-success p-2 rounded-circle">
@@ -57,7 +57,7 @@
             <div class="card border-0 shadow-sm p-3 border-start border-4 border-warning">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <div class="text-muted small text-uppercase fw-semibold">Field Inspectors</div>
+                        <div class="text-muted small text-uppercase fw-semibold">{{ t('lbl_field_inspectors') }}</div>
                         <div class="fs-4 fw-bold text-warning-emphasis">{{ counts.inspector }}</div>
                     </div>
                     <div class="bg-warning-subtle text-warning-emphasis p-2 rounded-circle">
@@ -70,7 +70,7 @@
             <div class="card border-0 shadow-sm p-3 border-start border-4 border-danger">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <div class="text-muted small text-uppercase fw-semibold">Administrators</div>
+                        <div class="text-muted small text-uppercase fw-semibold">{{ t('lbl_administrators') }}</div>
                         <div class="fs-4 fw-bold text-danger">{{ counts.admin }}</div>
                     </div>
                     <div class="bg-danger-subtle text-danger p-2 rounded-circle">
@@ -94,22 +94,22 @@
                 <div class="col-md-3">
                     <select name="role" class="form-select form-select-sm" onchange="this.form.submit()">
                         <option value="ALL" {% if role_filter == 'ALL' or not role_filter %}selected{% endif %}>All Roles (Admin, Inspector, Citizen)</option>
-                        <option value="USER" {% if role_filter == 'USER' %}selected{% endif %}>Citizens (USER)</option>
-                        <option value="INSPECTOR" {% if role_filter == 'INSPECTOR' %}selected{% endif %}>Inspectors (INSPECTOR)</option>
-                        <option value="ADMIN" {% if role_filter == 'ADMIN' %}selected{% endif %}>Administrators (ADMIN)</option>
+                        <option value="USER" {% if role_filter == 'USER' %}selected{% endif %}>{{ t('lbl_citizens') }}</option>
+                        <option value="INSPECTOR" {% if role_filter == 'INSPECTOR' %}selected{% endif %}>{{ t('lbl_field_inspectors') }}</option>
+                        <option value="ADMIN" {% if role_filter == 'ADMIN' %}selected{% endif %}>{{ t('lbl_administrators') }}</option>
                     </select>
                 </div>
                 <div class="col-md-2">
                     <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
-                        <option value="ALL" {% if status_filter == 'ALL' or not status_filter %}selected{% endif %}>All Statuses</option>
+                        <option value="ALL" {% if status_filter == 'ALL' or not status_filter %}selected{% endif %}>{{ t('filter_all') }}</option>
                         <option value="ACTIVE" {% if status_filter == 'ACTIVE' %}selected{% endif %}>Active Only</option>
                         <option value="INACTIVE" {% if status_filter == 'INACTIVE' %}selected{% endif %}>Inactive Only</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex gap-2 justify-content-md-end">
-                    <button type="submit" class="btn btn-sm btn-navy px-3">Filter</button>
+                    <button type="submit" class="btn btn-sm btn-navy px-3">{{ t('filter_btn') }}</button>
                     {% if search_query or (role_filter and role_filter != 'ALL') or (status_filter and status_filter != 'ALL') %}
-                        <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-outline-secondary">{{ t('reset_btn') }}</a>
                     {% endif %}
                 </div>
             </form>
@@ -130,15 +130,15 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light small text-uppercase">
                         <tr>
-                            <th class="ps-3">User ID</th>
-                            <th>Full Name</th>
-                            <th>Username</th>
-                            <th>Email Address</th>
-                            <th>Contact Phone</th>
+                            <th class="ps-3">{{ t('th_user_id') }}</th>
+                            <th>{{ t('lbl_full_name') }}</th>
+                            <th>{{ t('lbl_username') }}</th>
+                            <th>{{ t('lbl_email_address') }}</th>
+                            <th>{{ t('lbl_contact_phone') }}</th>
                             <th class="text-center">Role</th>
-                            <th class="text-center">Status</th>
-                            <th>Registered Date</th>
-                            <th class="text-center pe-3">Activity</th>
+                            <th class="text-center">{{ t('th_status') }}</th>
+                            <th>{{ t('th_registered_date') }}</th>
+                            <th class="text-center pe-3">{{ t('th_activity') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -216,9 +216,9 @@
                             <tr>
                                 <td colspan="9" class="text-center py-5 text-muted">
                                     <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                                    <h6>No matching user accounts found</h6>
+                                    <h6>{{ t('no_users_found') }}</h6>
                                     <p class="small text-muted mb-0">Try changing your search keywords or resetting filters.</p>
-                                    <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-outline-secondary mt-3">Reset Filters</a>
+                                    <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-outline-secondary mt-3">{{ t('btn_reset_filters') }}</a>
                                 </td>
                             </tr>
                         {% endif %}

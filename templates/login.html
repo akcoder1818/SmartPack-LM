@@ -1,32 +1,53 @@
 {% extends "base.html" %}
 
-{% block title %}Sign In | SmartPack-LM Legal Metrology Inspection Portal{% endblock %}
+{% block title %}{{ t('auth_portal_sign_in') }} | SmartPack-LM (SIH 2026){% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-5">
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <!-- Header Banner -->
-                <div class="bg-navy p-4 text-center text-white position-relative">
-                    <div class="brand-emblem mx-auto mb-2" style="width: 54px; height: 54px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                        <i class="bi bi-shield-lock-fill text-warning fs-2"></i>
+<div class="govtech-grid-bg py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-5">
+                <div class="login-govtech-card">
+                    <!-- Header Banner -->
+                    <div class="login-header-banner">
+                        <div class="brand-emblem mx-auto mb-2.5" style="width: 58px; height: 58px; background: rgba(255,255,255,0.12); border-radius: 14px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.25);">
+                            <i class="bi bi-shield-lock-fill text-warning fs-2"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1 text-white">{{ t('auth_portal_sign_in') }}</h4>
+                        <p class="small text-white-50 mb-2">{{ t('auth_division_name') }}</p>
+                        <div class="d-inline-flex align-items-center gap-1.5 badge bg-warning text-dark px-3 py-1 fw-bold font-monospace">
+                            <i class="bi bi-award-fill"></i> SIH 2026 &bull; National Portal
+                        </div>
+
+                        <!-- SIH Evaluator Demo Credentials Quick Reference -->
+                        <div class="login-demo-badge mt-3 text-start mx-auto p-2.5 rounded-3" style="max-width: 380px;">
+                            <div class="d-flex align-items-center justify-content-between mb-1.5">
+                                <span class="d-flex align-items-center gap-1 text-warning fw-bold" style="font-size: 0.76rem;">
+                                    <i class="bi bi-key-fill"></i> Evaluation Test Credentials:
+                                </span>
+                                <small class="text-white-50" style="font-size: 0.68rem;">1-Click Auto-Fill</small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-warning text-white py-1 px-2 w-50 font-monospace quick-fill-btn text-truncate shadow-xs" data-user="inspector1" data-pass="demo123" style="font-size: 0.72rem;">
+                                    <i class="bi bi-person-badge me-1"></i>inspector1
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-warning text-white py-1 px-2 w-50 font-monospace quick-fill-btn text-truncate shadow-xs" data-user="admin" data-pass="admin123" style="font-size: 0.72rem;">
+                                    <i class="bi bi-shield-lock me-1"></i>admin
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <h4 class="fw-bold mb-1">Official Portal Sign In</h4>
-                    <p class="small text-white-50 mb-0">Legal Metrology Compliance Enforcement Division</p>
-                    <span class="badge bg-warning text-dark px-3 py-1 font-monospace mt-2">SIH26034 AUTH GATEWAY</span>
-                </div>
 
                 <!-- Tabbed Navigation: Official vs Citizen -->
                 <ul class="nav nav-tabs nav-fill bg-light border-bottom" id="loginTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active py-3 fw-bold small text-uppercase" id="official-tab" data-bs-toggle="tab" data-bs-target="#officialPane" type="button" role="tab">
-                            <i class="bi bi-shield-lock-fill me-1 text-warning"></i> LM Official / Admin
+                            <i class="bi bi-shield-lock-fill me-1 text-warning"></i> {{ t('auth_tab_official') }}
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link py-3 fw-bold small text-uppercase text-dark" id="citizen-tab" data-bs-toggle="tab" data-bs-target="#citizenPane" type="button" role="tab">
-                            <i class="bi bi-person-heart me-1 text-primary"></i> Citizen / Consumer
+                            <i class="bi bi-person-heart me-1 text-primary"></i> {{ t('auth_tab_citizen') }}
                         </button>
                     </li>
                 </ul>
@@ -51,7 +72,7 @@
                                 <input type="hidden" name="login_type" value="official">
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold text-dark small">
-                                        <i class="bi bi-person-badge-fill text-primary me-1"></i> Official Badge / Username
+                                        <i class="bi bi-person-badge-fill text-primary me-1"></i> {{ t('lbl_official_username') }}
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
@@ -61,14 +82,14 @@
 
                                 <div class="mb-4">
                                     <label class="form-label fw-semibold text-dark small d-flex justify-content-between align-items-center">
-                                        <span><i class="bi bi-key-fill text-primary me-1"></i> Official Password</span>
-                                        <small class="text-muted">Encrypted Session</small>
+                                        <span><i class="bi bi-key-fill text-primary me-1"></i> {{ t('lbl_official_password') }}</span>
+                                        <small class="text-muted">{{ t('lbl_encrypted_session') }}</small>
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light text-muted"><i class="bi bi-lock"></i></span>
                                         <input type="password" name="password" id="officialPasswordInput" class="form-control" placeholder="••••••••••••" required autocomplete="current-password">
                                         <button class="btn btn-outline-secondary toggle-pwd-btn" type="button" data-target="officialPasswordInput" title="Toggle password visibility">
-                                            <i class="bi bi-eye"></i>
+                                             <i class="bi bi-eye"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -76,7 +97,7 @@
                                 <div class="d-grid gap-2">
                                     <button type="submit" class="btn btn-navy btn-lg py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
                                         <i class="bi bi-shield-check text-warning fs-5"></i>
-                                        <span>Authenticate as Official</span>
+                                        <span>{{ t('btn_auth_official') }}</span>
                                     </button>
                                 </div>
                             </form>
@@ -86,8 +107,8 @@
                                 <div class="d-flex gap-2 align-items-start">
                                     <i class="bi bi-shield-check text-success fs-5 mt-0.5"></i>
                                     <div class="small text-muted">
-                                        <strong class="text-dark d-block">Authorized LM Enforcement</strong>
-                                        Default administrator login: <code>admin</code> / <code>Admin@SIH2026</code>. Inspector accounts are provisioned by the Administrator.
+                                        <strong class="text-dark d-block">{{ t('auth_official_notice_title') }}</strong>
+                                        {{ t('auth_official_notice_desc') }}
                                     </div>
                                 </div>
                             </div>
@@ -99,7 +120,7 @@
                                 <input type="hidden" name="login_type" value="citizen">
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold text-dark small">
-                                        <i class="bi bi-envelope-fill text-primary me-1"></i> Email or Username
+                                        <i class="bi bi-envelope-fill text-primary me-1"></i> {{ t('lbl_email_or_username') }}
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light text-muted"><i class="bi bi-person-circle"></i></span>
@@ -109,8 +130,8 @@
 
                                 <div class="mb-4">
                                     <label class="form-label fw-semibold text-dark small d-flex justify-content-between align-items-center">
-                                        <span><i class="bi bi-key-fill text-primary me-1"></i> Password</span>
-                                        <small class="text-muted">Encrypted Session</small>
+                                        <span><i class="bi bi-key-fill text-primary me-1"></i> {{ t('lbl_password') }}</span>
+                                        <small class="text-muted">{{ t('lbl_encrypted_session') }}</small>
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light text-muted"><i class="bi bi-lock"></i></span>
@@ -124,14 +145,14 @@
                                 <div class="d-grid gap-2 mb-3">
                                     <button type="submit" class="btn btn-primary btn-lg py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
                                         <i class="bi bi-box-arrow-in-right fs-5"></i>
-                                        <span>Sign In as Citizen</span>
+                                        <span>{{ t('btn_sign_in_citizen') }}</span>
                                     </button>
                                 </div>
 
                                 <div class="p-3 bg-light rounded-3 text-center border">
-                                    <div class="small text-muted mb-2">New to SmartPack-LM? Create an account to track your scans &amp; grievances:</div>
+                                    <div class="small text-muted mb-2">{{ t('auth_new_citizen_prompt') }}</div>
                                     <a href="{{ url_for('register') }}" class="btn btn-sm btn-outline-primary px-4 rounded-pill fw-semibold">
-                                        <i class="bi bi-person-plus-fill me-1"></i> Register Free Citizen Account
+                                        <i class="bi bi-person-plus-fill me-1"></i> {{ t('btn_register_citizen_free') }}
                                     </a>
                                 </div>
                             </form>
@@ -140,7 +161,7 @@
 
                     <div class="text-center mt-4 pt-2 border-top">
                         <a href="{{ url_for('index') }}" class="small text-decoration-none text-muted">
-                            <i class="bi bi-arrow-left me-1"></i> Return to Public Scan Area
+                            <i class="bi bi-arrow-left me-1"></i> {{ t('return_to_scan') }}
                         </a>
                     </div>
                 </div>
@@ -148,9 +169,11 @@
         </div>
     </div>
 </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // 1. Password Visibility Toggle
     document.querySelectorAll('.toggle-pwd-btn').forEach(function(btn) {
         btn.addEventListener('click', function () {
             const targetId = this.getAttribute('data-target');
@@ -160,6 +183,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 pwdInput.type = isPassword ? 'text' : 'password';
                 this.innerHTML = isPassword ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
             }
+        });
+    });
+
+    // 2. Evaluator Demo Credential 1-Click Quick-Fill
+    document.querySelectorAll('.quick-fill-btn').forEach(function(btn) {
+        btn.addEventListener('click', function () {
+            const u = this.getAttribute('data-user');
+            const p = this.getAttribute('data-pass');
+            const officialTab = document.getElementById('official-tab');
+            if (officialTab && typeof bootstrap !== 'undefined') {
+                bootstrap.Tab.getOrCreateInstance(officialTab).show();
+            }
+            const uInput = document.querySelector('#officialPane input[name="username"]');
+            const pInput = document.getElementById('officialPasswordInput');
+            if (uInput) { uInput.value = u; }
+            if (pInput) { pInput.value = p; }
         });
     });
 });

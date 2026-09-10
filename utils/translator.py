@@ -13,7 +13,8 @@ SUPPORTED_LANGUAGES = {
     "ta": {"code": "ta", "name": "Tamil", "native": "தமிழ்"},
     "kn": {"code": "kn", "name": "Kannada", "native": "ಕನ್ನಡ"},
     "te": {"code": "te", "name": "Telugu", "native": "తెలుగు"},
-    "ml": {"code": "ml", "name": "Malayalam", "native": "മലയാളം"}
+    "ml": {"code": "ml", "name": "Malayalam", "native": "മലയാളം"},
+    "mr": {"code": "mr", "name": "Marathi", "native": "मराठी"}
 }
 
 _TRANSLATIONS_CACHE = {}

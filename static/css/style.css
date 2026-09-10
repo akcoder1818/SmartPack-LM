@@ -83,11 +83,29 @@ main {
     color: #CBD5E1 !important;
     transition: all 0.2s ease;
     border-radius: 6px;
+    position: relative;
 }
 
-.nav-link:hover, .nav-link.active {
+.nav-link:hover {
     color: #FFFFFF !important;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.nav-link.active {
+    color: #FFFFFF !important;
+    background-color: rgba(255, 255, 255, 0.12);
+    font-weight: 600;
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 10px;
+    right: 10px;
+    height: 2.5px;
+    background: var(--saffron-gold);
+    border-radius: 2px;
 }
 
 /* =========================================================
@@ -97,6 +115,8 @@ main {
     background: linear-gradient(135deg, var(--navy-primary) 0%, #061528 50%, var(--navy-dark) 100%);
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    overflow: hidden;
+    position: relative;
 }
 
 .hero-card::after {
@@ -532,6 +552,18 @@ main {
     border-color: var(--navy-dark);
 }
 
+.btn-outline-navy {
+    background-color: transparent;
+    color: var(--navy-primary);
+    border: 1.5px solid var(--navy-primary);
+    transition: all 0.2s ease;
+}
+
+.btn-outline-navy:hover {
+    background-color: var(--navy-primary);
+    color: #FFFFFF;
+}
+
 /* KPI Cards */
 .kpi-card {
     border-radius: 10px;
@@ -676,3 +708,708 @@ main {
     touch-action: manipulation;
     white-space: nowrap;
 }
+
+/* =============================================
+   GovTech Design System & Component Enhancements
+   ============================================= */
+
+/* Dot Grid Background Pattern */
+.govtech-grid-bg {
+    background-color: var(--slate-bg);
+    background-image: radial-gradient(#CBD5E1 1.2px, transparent 1.2px);
+    background-size: 24px 24px;
+}
+
+/* 4-Stage Visual Inspection Pipeline */
+.inspection-pipeline {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 12px 16px;
+    backdrop-filter: blur(8px);
+}
+
+.pipeline-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pipeline-step-badge {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 50%;
+    background: rgba(255, 153, 51, 0.15);
+    color: var(--saffron-gold);
+    border: 1.5px solid var(--saffron-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.pipeline-step-info h6 {
+    font-size: 0.82rem;
+    margin-bottom: 1px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.pipeline-step-info small {
+    font-size: 0.7rem;
+    color: #94A3B8;
+    display: block;
+    line-height: 1.2;
+}
+
+.pipeline-connector {
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 1.1rem;
+}
+
+/* Workflow Step Cards (01 to 04) */
+.workflow-step-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--navy-primary);
+    color: #FFFFFF;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 6px rgba(10, 37, 64, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.workflow-card-modern {
+    background: #FFFFFF;
+    border: 1px solid var(--slate-border);
+    border-radius: 14px;
+    padding: 22px 18px;
+    height: 100%;
+    transition: all 0.25s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.workflow-card-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    transition: background 0.25s ease;
+}
+
+.workflow-card-modern:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px -4px rgba(10, 37, 64, 0.08);
+    border-color: #CBD5E1;
+}
+
+.workflow-card-modern:hover::before {
+    background: var(--saffron-gold);
+}
+
+/* Capability Pillar Cards */
+.pillar-card {
+    background: #FFFFFF;
+    border: 1px solid var(--slate-border);
+    border-radius: 12px;
+    padding: 20px 18px;
+    height: 100%;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.pillar-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px -2px rgba(10, 37, 64, 0.08);
+    border-color: #CBD5E1;
+}
+
+/* Compact Rule 6(1) Summary Card */
+.rule-summary-card {
+    background: #FFFFFF;
+    border: 1px solid var(--slate-border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.rule-summary-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--slate-bg);
+    border-radius: 8px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: all 0.15s ease;
+}
+
+.rule-summary-item:hover {
+    background: #FFFFFF;
+    border-color: #CBD5E1;
+}
+
+.rule-summary-icon {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 6px;
+    background: rgba(10, 37, 64, 0.08);
+    color: var(--navy-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+}
+
+/* Trust & Statutory Alignment Card */
+.trust-statutory-card {
+    background: #FFFFFF;
+    border: 1px solid var(--slate-border);
+    border-left: 4px solid var(--navy-primary);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Login GovTech Card */
+.login-govtech-card {
+    background: #FFFFFF;
+    border: 1px solid var(--slate-border);
+    border-radius: 16px;
+    box-shadow: 0 12px 36px -8px rgba(10, 37, 64, 0.1), 0 4px 12px -2px rgba(10, 37, 64, 0.04);
+    overflow: hidden;
+    position: relative;
+}
+
+.login-header-banner {
+    background: linear-gradient(135deg, var(--navy-primary) 0%, var(--navy-dark) 100%);
+    padding: 28px 24px;
+    text-align: center;
+    color: #FFFFFF;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-header-banner::after {
+    content: '';
+    position: absolute;
+    right: -20px;
+    bottom: -30px;
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(255, 153, 51, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.login-demo-badge {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+}
+
+/* Subtle Dropzone Enhancement */
+.dropzone-box {
+    border: 2px dashed #CBD5E1 !important;
+    background: #FFFFFF;
+    transition: all 0.2s ease;
+}
+
+.dropzone-box:hover, .dropzone-box.dragover {
+    border-color: var(--navy-primary) !important;
+    background: rgba(10, 37, 64, 0.03);
+    transform: translateY(-1px);
+}
+
+/* =========================================================
+   PHASE 2: SCAN & FIELD INSPECTION WORKSTATION STYLES
+   ========================================================= */
+
+/* Dual-Label Synergy Connector */
+.dual-label-synergy-banner {
+    background: linear-gradient(135deg, rgba(10, 37, 64, 0.04) 0%, rgba(30, 58, 95, 0.08) 100%);
+    border: 1px dashed rgba(10, 37, 64, 0.22);
+    border-radius: 12px;
+    padding: 12px 16px;
+}
+
+/* Capture Tips Card */
+.capture-tips-card {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-left: 4px solid var(--saffron-gold);
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+
+.tip-item {
+    font-size: 0.78rem;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tip-item i {
+    color: #10B981;
+    font-size: 0.9rem;
+}
+
+/* Inspection Upload Card */
+.inspection-card {
+    background: #FFFFFF;
+    border: 1px solid #CBD5E1;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px -2px rgba(10, 37, 64, 0.06);
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inspection-card:focus-within,
+.inspection-card:hover {
+    border-color: #94A3B8;
+    box-shadow: 0 6px 16px -4px rgba(10, 37, 64, 0.09);
+}
+
+.inspection-card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid #E2E8F0;
+    background: #F8FAFC;
+}
+
+.inspection-card-body {
+    padding: 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Preview Frame */
+.dropzone-preview {
+    animation: fadeInScale 0.25s ease forwards;
+    width: 100%;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.preview-container {
+    background: #0F172A;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    max-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #334155;
+}
+
+.preview-img {
+    max-height: 250px;
+    width: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.preview-meta-badge {
+    background: rgba(15, 23, 42, 0.88);
+    color: #F1F5F9;
+    font-size: 0.72rem;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 6px;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Processing Workstation Console */
+.processing-console-card {
+    background: linear-gradient(135deg, var(--navy-primary) 0%, var(--navy-dark) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    color: #FFFFFF;
+    box-shadow: 0 8px 24px -4px rgba(10, 37, 64, 0.25);
+}
+
+.scanning-radar-line {
+    height: 3px;
+    background: linear-gradient(90deg, transparent 0%, var(--saffron-gold) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: sweepRadar 1.5s linear infinite;
+    border-radius: 2px;
+}
+
+@keyframes sweepRadar {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Camera Reticle Overlay */
+.camera-viewfinder-box {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+}
+
+.camera-reticle {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 60px;
+    border: 2px dashed rgba(255, 153, 51, 0.6);
+    border-radius: 10px;
+    pointer-events: none;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);
+}
+
+.camera-reticle::before {
+    content: "ALIGN STATUTORY DECLARATION PANEL HERE";
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.75);
+    color: var(--saffron-gold);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 153, 51, 0.4);
+    white-space: nowrap;
+}
+
+/* Demo Presets Shelf Segregation */
+.demo-evaluation-shelf {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    border: 1.5px dashed #F59E0B;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.08);
+}
+
+/* Touch Friendly Mobile Targets */
+@media (max-width: 991px) {
+    .dropzone-box {
+        min-height: 200px;
+    }
+    .btn-lg {
+        padding-top: 14px;
+        padding-bottom: 14px;
+    }
+}
+
+/* Accessibility: Prefers-Reduced-Motion */
+@media (prefers-reduced-motion: reduce) {
+    .laser-scanline,
+    .pulse-dot,
+    .spinner-grow,
+    .progress-bar-animated,
+    .scanning-radar-line,
+    .dropzone-preview,
+    .result-hero-card,
+    .result-kpi-card {
+        animation: none !important;
+    }
+    .laser-scanline,
+    .scanning-radar-line {
+        display: none !important;
+    }
+    * {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}
+
+/* ==========================================================================
+   PHASE 3: RESULT PAGE, COMPLIANCE MATRIX & EVIDENCE PRESENTATION
+   ========================================================================== */
+
+/* Result Hero & Status Banner */
+.result-hero-card {
+    border-radius: 16px;
+    border: 1px solid var(--slate-border);
+    transition: box-shadow 0.2s ease;
+}
+
+.status-banner-compliant {
+    background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+    border: 1.5px solid #10B981 !important;
+    color: #065F46;
+}
+
+.status-banner-noncompliant {
+    background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%);
+    border: 1.5px solid #EF4444 !important;
+    color: #991B1B;
+}
+
+.status-banner-review {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    border: 1.5px solid #F59E0B !important;
+    color: #92400E;
+}
+
+.score-display-card {
+    background: #FFFFFF;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.score-num-compliant {
+    color: #059669;
+}
+
+.score-num-noncompliant {
+    color: #DC2626;
+}
+
+.score-num-review {
+    color: #D97706;
+}
+
+/* KPI Summary Cards */
+.result-kpi-card {
+    background: #FFFFFF;
+    border-radius: 12px;
+    border: 1px solid var(--slate-border);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.result-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(10, 37, 64, 0.08);
+}
+
+.result-kpi-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+/* Explainability Callouts */
+.finding-callout {
+    background-color: #F8FAFC;
+    border-left: 3px solid #64748B;
+    border-radius: 0 6px 6px 0;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    color: #334155;
+    margin-top: 4px;
+}
+
+.action-callout {
+    background-color: #FFFBEB;
+    border-left: 3px solid #F59E0B;
+    border-radius: 0 6px 6px 0;
+    padding: 5px 10px;
+    font-size: 0.76rem;
+    color: #92400E;
+    margin-top: 4px;
+}
+
+/* Field Source Badges */
+.badge-source-front {
+    background-color: #EEF2FF;
+    color: #4338CA;
+    border: 1px solid #C7D2FE;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+
+.badge-source-back {
+    background-color: #F5F3FF;
+    color: #6D28D9;
+    border: 1px solid #DDD6FE;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+
+/* Evidence Legend Box */
+.evidence-legend-box {
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+.legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Evidence Zoom Container */
+.evidence-img-container {
+    background-color: #0F172A;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    position: relative;
+    overflow: hidden;
+    cursor: zoom-in;
+}
+
+.evidence-img-container.is-zoomed {
+    cursor: zoom-out;
+}
+
+.zoomable-img {
+    transition: transform 0.25s ease-out;
+    transform-origin: center center;
+    max-height: 440px;
+    width: 100%;
+    object-fit: contain;
+}
+
+.evidence-img-container.is-zoomed .zoomable-img {
+    transform: scale(1.6);
+}
+
+/* Decision Support Advisory Card */
+.advisory-disclaimer-card {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-left: 4px solid var(--navy-primary);
+    border-radius: 0 10px 10px 0;
+}
+
+/* Print Stylesheet */
+@media print {
+    nav.navbar,
+    .gov-topbar,
+    .gov-footer,
+    .btn,
+    .modal,
+    #evidenceTabs,
+    #jsonModal,
+    .action-toolbar {
+        display: none !important;
+    }
+    
+    body {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+        font-size: 11pt;
+    }
+
+    .container-fluid {
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .card {
+        border: 1px solid #CCCCCC !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+
+    .result-hero-card {
+        border: 1px solid #999999 !important;
+    }
+
+    .statutory-table th,
+    .statutory-table td {
+        padding: 6px 8px !important;
+        font-size: 9pt;
+    }
+
+    .evidence-img-container {
+        max-height: 280px !important;
+        background: #FFFFFF !important;
+    }
+
+    .evidence-img-container img {
+        max-height: 270px !important;
+    }
+}
+
+/* ==========================================================================
+   PHASE 4: DASHBOARD, INSPECTIONS, INSPECTORS & AUTHENTICATION POLISH
+   ========================================================================== */
+
+.quick-fill-btn {
+    transition: all 0.2s ease;
+    border-color: rgba(245, 158, 11, 0.45) !important;
+}
+
+.quick-fill-btn:hover {
+    background-color: rgba(245, 158, 11, 0.25) !important;
+    border-color: #F59E0B !important;
+    color: #FFFFFF !important;
+    transform: translateY(-1px);
+}
+
+.table-responsive {
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 767.98px) {
+    .login-govtech-card {
+        border-radius: 12px;
+    }
+    .input-group-sm {
+        max-width: 100% !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .action-toolbar .btn {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+    .result-kpi-card {
+        padding: 12px !important;
+    }
+    .camera-reticle::before {
+        font-size: 0.58rem;
+        letter-spacing: 0.4px;
+        padding: 2px 6px;
+    }
+    .evidence-legend-box {
+        font-size: 0.75rem;
+    }
+}
+
+
+

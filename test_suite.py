@@ -43,7 +43,7 @@ assert len(rules) >= 8, "Expected at least 8 statutory rules"
 
 # 3. Translation Catalogs Verification
 print("[Step 3/8] Testing Multilingual Translation Catalogs...")
-expected_langs = ["en", "hi", "ta", "kn", "te", "ml"]
+expected_langs = ["en", "hi", "mr", "ta", "kn", "te", "ml"]
 for lang in expected_langs:
     cat = translator.load_translations(lang)
     assert cat.get("lang_code") == lang, f"Language code mismatch for {lang}"
@@ -53,7 +53,8 @@ for lang in expected_langs:
 
 # Test translation function
 assert translator.t("analyze_btn", lang="hi") == "उत्पाद अनुपालन का विश्लेषण करें"
-assert translator.t("analyze_btn", lang="ta") == "தயாரிப்பு இணக்கத்தை ஆய்வு செய்"
+assert translator.t("analyze_btn", lang="ta") == "பொருளின் இணக்கத்தை பகுப்பாய்வு செய்"
+assert translator.t("analyze_btn", lang="mr") == "उत्पादन अनुपालनाचे विश्लेषण करा"
 assert translator.t("non_existent_key", lang="hi", default="Fallback") == "Fallback"
 print("  [OK] Translation lookups and fallback verified.")
 
@@ -126,7 +127,11 @@ assert r_home.status_code == 200
 r_switch_hi = client.get("/set-language/hi", follow_redirects=True)
 assert r_switch_hi.status_code == 200
 assert "भारत सरकार" in r_switch_hi.data.decode("utf-8")
-print("  [OK] Language switch to Hindi verified in HTML response.")
+# Switch to Marathi
+r_switch_mr = client.get("/set-language/mr", follow_redirects=True)
+assert r_switch_mr.status_code == 200
+assert "भारत सरकार" in r_switch_mr.data.decode("utf-8")
+print("  [OK] Language switch to Marathi verified in HTML response.")
 
 # Switch to Tamil
 r_switch_ta = client.get("/set-language/ta", follow_redirects=True)

@@ -7,20 +7,20 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
             <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-navy text-white fw-bold">Citizen Portal</span>
-                <span class="text-muted small">Total Filed: {{ total_count }}</span>
+                <span class="badge bg-navy text-white fw-bold">{{ t('complaint_citizen_badge') }}</span>
+                <span class="text-muted small">Total: {{ total_count }}</span>
             </div>
-            <h2 class="fw-bold text-navy mb-0">My Registered Grievances</h2>
-            <p class="small text-muted mb-0">Track verification &amp; enforcement action taken by Legal Metrology inspectors.</p>
+            <h2 class="fw-bold text-navy mb-0">{{ t('my_grievances_title') }}</h2>
+            <p class="small text-muted mb-0">{{ t('my_grievances_desc')|safe }}</p>
         </div>
         <div class="d-flex gap-2">
             <a href="{{ url_for('index') }}" class="btn btn-navy d-flex align-items-center gap-1 shadow-sm">
                 <i class="bi bi-qr-code-scan text-warning"></i>
-                <span class="fw-semibold">Scan Commodity</span>
+                <span class="fw-semibold">{{ t('nav_scan') }}</span>
             </a>
             <a href="{{ url_for('inspection_history') }}" class="btn btn-outline-secondary d-flex align-items-center gap-1">
                 <i class="bi bi-clock-history"></i>
-                <span>My Inspections</span>
+                <span>{{ t('nav_my_inspections') }}</span>
             </a>
         </div>
     </div>
@@ -33,13 +33,13 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light small text-uppercase">
                         <tr>
-                            <th class="ps-3">Grievance No.</th>
-                            <th>Product / Commodity</th>
-                            <th>Retailer Details</th>
-                            <th>Date Filed</th>
-                            <th class="text-center">Violations</th>
-                            <th class="text-center">Status</th>
-                            <th class="text-end pe-3">Action</th>
+                            <th class="ps-3">{{ t('th_grievance_no') }}</th>
+                            <th>{{ t('th_product') }}</th>
+                            <th>{{ t('th_retailer_details') }}</th>
+                            <th>{{ t('th_date_filed') }}</th>
+                            <th class="text-center">{{ t('th_violations') }}</th>
+                            <th class="text-center">{{ t('th_status') }}</th>
+                            <th class="text-end pe-3">{{ t('th_actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,7 +68,7 @@
                             </td>
                             <td class="text-end pe-3">
                                 <a href="{{ url_for('view_complaint_detail', complaint_id=c.id) }}" class="btn btn-sm btn-outline-navy rounded-pill">
-                                    <span>Track</span> <i class="bi bi-arrow-right ms-1"></i>
+                                    <span>{{ t('btn_track') }}</span> <i class="bi bi-arrow-right ms-1"></i>
                                 </a>
                             </td>
                         </tr>
@@ -79,10 +79,10 @@
             {% else %}
             <div class="p-5 text-center text-muted">
                 <i class="bi bi-shield-check fs-1 text-secondary opacity-50 mb-3 d-block"></i>
-                <h5 class="fw-bold text-dark">No Grievances Registered Yet</h5>
-                <p class="small text-muted mb-3">When you scan a commodity that fails Legal Metrology standards, you can submit a grievance directly from the result page.</p>
+                <h5 class="fw-bold text-dark">{{ t('no_grievances_title') }}</h5>
+                <p class="small text-muted mb-3">{{ t('no_grievances_desc') }}</p>
                 <a href="{{ url_for('index') }}" class="btn btn-navy rounded-pill px-4">
-                    <i class="bi bi-qr-code-scan me-1 text-warning"></i> Start a Scan
+                    <i class="bi bi-qr-code-scan me-1 text-warning"></i> {{ t('btn_start_scan') }}
                 </a>
             </div>
             {% endif %}

@@ -12,8 +12,8 @@
                     <div class="brand-emblem mx-auto mb-2" style="width: 54px; height: 54px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                         <i class="bi bi-person-plus-fill text-warning fs-2"></i>
                     </div>
-                    <h4 class="fw-bold mb-1">Citizen Portal Registration</h4>
-                    <p class="small text-white-50 mb-0">Legal Metrology Consumer Grievance &amp; Verification Network</p>
+                    <h4 class="fw-bold mb-1">{{ t('reg_title') }}</h4>
+                    <p class="small text-white-50 mb-0">{{ t('reg_subtitle')|safe }}</p>
                     <span class="badge bg-warning text-dark px-3 py-1 font-monospace mt-2">CITIZEN ACCOUNT</span>
                 </div>
 
@@ -33,7 +33,7 @@
                     <form method="POST" action="{{ url_for('register') }}">
                         <div class="mb-3">
                             <label class="form-label fw-semibold text-dark small">
-                                <i class="bi bi-person text-primary me-1"></i> Full Name <span class="text-danger">*</span>
+                                <i class="bi bi-person text-primary me-1"></i> {{ t('lbl_full_name') }} <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
@@ -44,7 +44,7 @@
                         <div class="row g-3 mb-3">
                             <div class="col-sm-6">
                                 <label class="form-label fw-semibold text-dark small">
-                                    <i class="bi bi-person-badge text-primary me-1"></i> Username <span class="text-danger">*</span>
+                                    <i class="bi bi-person-badge text-primary me-1"></i> {{ t('lbl_username') }} <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light text-muted">@</span>
@@ -53,7 +53,7 @@
                             </div>
                             <div class="col-sm-6">
                                 <label class="form-label fw-semibold text-dark small">
-                                    <i class="bi bi-telephone text-primary me-1"></i> Mobile Number
+                                    <i class="bi bi-telephone text-primary me-1"></i> {{ t('lbl_mobile_number') }}
                                 </label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light text-muted"><i class="bi bi-phone"></i></span>
@@ -64,19 +64,19 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-semibold text-dark small">
-                                <i class="bi bi-envelope-at text-primary me-1"></i> Email Address <span class="text-danger">*</span>
+                                <i class="bi bi-envelope-at text-primary me-1"></i> {{ t('lbl_email_address') }} <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
                                 <input type="email" name="email" class="form-control" placeholder="ramesh@example.com" required autocomplete="email" value="{{ form_data.get('email', '') if form_data else '' }}">
                             </div>
-                            <div class="form-text small text-muted">Used for complaint updates and audit reports.</div>
+                            <div class="form-text small text-muted">{{ t('reg_email_hint') }}</div>
                         </div>
 
                         <div class="row g-3 mb-4">
                             <div class="col-sm-6">
                                 <label class="form-label fw-semibold text-dark small">
-                                    <i class="bi bi-lock text-primary me-1"></i> Password <span class="text-danger">*</span>
+                                    <i class="bi bi-lock text-primary me-1"></i> {{ t('lbl_password') }} <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light text-muted"><i class="bi bi-key"></i></span>
@@ -88,7 +88,7 @@
                             </div>
                             <div class="col-sm-6">
                                 <label class="form-label fw-semibold text-dark small">
-                                    <i class="bi bi-shield-check text-primary me-1"></i> Confirm Password <span class="text-danger">*</span>
+                                    <i class="bi bi-shield-check text-primary me-1"></i> {{ t('lbl_confirm_password') }} <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light text-muted"><i class="bi bi-check2"></i></span>
@@ -100,21 +100,21 @@
                         <div class="d-grid gap-2 mb-3">
                             <button type="submit" class="btn btn-navy btn-lg py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
                                 <i class="bi bi-person-check-fill text-warning fs-5"></i>
-                                <span>Create Citizen Account</span>
+                                <span>{{ t('btn_create_account') }}</span>
                             </button>
                         </div>
                     </form>
 
                     <div class="p-3 bg-light rounded-3 text-center border">
-                        <div class="small text-muted mb-1">Already registered with SmartPack-LM?</div>
+                        <div class="small text-muted mb-1">{{ t('already_registered_prompt') }}</div>
                         <a href="{{ url_for('login') }}" class="small fw-bold text-primary text-decoration-none">
-                            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Existing Account
+                            <i class="bi bi-box-arrow-in-right me-1"></i> {{ t('btn_sign_in_existing') }}
                         </a>
                     </div>
 
                     <div class="text-center mt-3">
                         <a href="{{ url_for('index') }}" class="small text-decoration-none text-muted">
-                            <i class="bi bi-arrow-left me-1"></i> Return to Public Scan Area
+                            <i class="bi bi-arrow-left me-1"></i> {{ t('return_to_scan') }}
                         </a>
                     </div>
                 </div>

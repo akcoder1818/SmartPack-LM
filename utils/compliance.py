@@ -218,6 +218,8 @@ def assess_compliance(extracted_fields, custom_rules=None):
         if is_required or extracted_value:
             total_weight += weight
 
+        rule_evaluations.append(eval_item)
+
     # Count legitimately verified declarations
     verified_count = sum(1 for r in rule_evaluations if r.get("status") == "PASS")
     detected_count = sum(1 for r in rule_evaluations if r.get("extracted_value"))

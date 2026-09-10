@@ -127,6 +127,20 @@ const CameraUI = (function () {
         bsModal().hide();
     }
 
+    function useGalleryFallback() {
+        const inputId = targetInputId;
+        close();
+        if (inputId) {
+            const galleryInput = document.getElementById(inputId === 'frontImageInput' ? 'frontGalleryInput' : 'backGalleryInput');
+            if (galleryInput) {
+                galleryInput.click();
+            } else {
+                const fileInput = document.getElementById(inputId);
+                if (fileInput) fileInput.click();
+            }
+        }
+    }
+
     function init() {
         // Close button (×)
         document.getElementById('cameraCloseBtn')?.addEventListener('click', close);
@@ -146,9 +160,9 @@ const CameraUI = (function () {
         // Use Photo button
         document.getElementById('usePhotoBtn')?.addEventListener('click', usePhoto);
 
-        // Close buttons in error / http panes
-        document.getElementById('cameraErrorCloseBtn')?.addEventListener('click', close);
-        document.getElementById('cameraHttpCloseBtn')?.addEventListener('click', close);
+        // Fallback buttons in error / http panes -> seamlessly trigger file upload
+        document.getElementById('cameraErrorCloseBtn')?.addEventListener('click', useGalleryFallback);
+        document.getElementById('cameraHttpCloseBtn')?.addEventListener('click', useGalleryFallback);
 
         // When the Bootstrap modal finishes hiding, stop the stream
         modal()?.addEventListener('hidden.bs.modal', stopStream);
@@ -239,6 +253,17 @@ function setupDropzone(cfg) {
         });
     }
 
+    /* ---- Replace button ---- */
+    const replaceBtn = cfg.replaceBtnId ? document.getElementById(cfg.replaceBtnId) : null;
+    if (replaceBtn) {
+        replaceBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (galleryIn) galleryIn.click();
+            else input.click();
+        });
+    }
+
     /* ---- Remove button ---- */
     if (removeBtn) {
         removeBtn.addEventListener('click', function (e) {
@@ -261,25 +286,55 @@ function setupDropzone(cfg) {
 
 
 /* =========================================================
-   FILE PREVIEW HELPER
+   VALIDATION & FILE PREVIEW HELPER
    ========================================================= */
+function showValidationMessage(msg, type = 'danger') {
+    const alertEl = document.getElementById('scanValidationAlert');
+    if (alertEl) {
+        alertEl.className = `alert alert-${type} py-2.5 px-3 rounded-3 small mb-3 shadow-xs d-flex align-items-center gap-2`;
+        alertEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill fs-6 text-danger"></i> <span>${msg}</span>`;
+        alertEl.classList.remove('d-none');
+        alertEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+        alert(msg);
+    }
+}
+
 function handleFileSelect(file, content, previewBox, previewImg, nameLabel) {
     if (!file) return;
 
     const maxSize = 16 * 1024 * 1024;
     if (file.size > maxSize) {
-        alert('File is too large. Maximum allowed size is 16MB.');
+        showValidationMessage('File is too large. Maximum allowed size is 16MB.', 'danger');
         return;
     }
     if (!file.type.match('image.*')) {
-        alert('Please select an image file (PNG, JPG, JPEG, WEBP, BMP).');
+        showValidationMessage('Please select a valid image file (PNG, JPG, JPEG, WEBP, BMP).', 'warning');
         return;
     }
 
-    nameLabel.innerText = file.name + ' (' + (file.size / (1024 * 1024)).toFixed(2) + ' MB)';
+    // Dismiss any active validation alert
+    const alertEl = document.getElementById('scanValidationAlert');
+    if (alertEl) alertEl.classList.add('d-none');
 
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
     const reader = new FileReader();
     reader.onload = function (e) {
+        previewImg.onload = function () {
+            const w = this.naturalWidth;
+            const h = this.naturalHeight;
+            if (nameLabel) {
+                nameLabel.innerHTML = `
+                    <div class="d-flex flex-column text-start">
+                        <span class="small fw-bold text-dark text-truncate" style="max-width: 220px;" title="${file.name}">${file.name}</span>
+                        <div class="d-flex align-items-center gap-1.5 mt-0.5">
+                            <span class="badge bg-success-subtle text-success py-0.5 px-1.5 font-monospace" style="font-size: 0.65rem;"><i class="bi bi-check2"></i> Ready</span>
+                            <span class="text-muted small font-monospace" style="font-size: 0.7rem;">${sizeMb} MB &bull; ${w}&times;${h}px</span>
+                        </div>
+                    </div>
+                `;
+            }
+        };
         previewImg.src = e.target.result;
         content.classList.add('d-none');
         previewBox.classList.remove('d-none');
@@ -303,18 +358,24 @@ function setupFormSubmission() {
     scanForm.addEventListener('submit', function (e) {
         const frontInput = document.getElementById('frontImageInput');
         if (!frontInput || !frontInput.files || frontInput.files.length === 0) {
-            alert('Please select at least the Front Label image to proceed.');
             e.preventDefault();
+            showValidationMessage('Please capture or select at least the Front Label (Primary Product View) before starting inspection.', 'danger');
+            const frontDropzone = document.getElementById('frontDropzone');
+            if (frontDropzone) {
+                frontDropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                frontDropzone.classList.add('border-danger');
+                setTimeout(() => frontDropzone.classList.remove('border-danger'), 3000);
+            }
             return;
         }
 
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Analyzing Commodity Label...';
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Inspecting Packaging Label...';
         progressIndicator.classList.remove('d-none');
 
         const steps = [
             { width: '25%', text: '1/4 Preprocessing label images with OpenCV (CLAHE & Binarization)...' },
-            { width: '55%', text: '2/4 Extracting statutory declarations via OCR Token Engine...' },
+            { width: '55%', text: '2/4 Extracting statutory declarations via Multi-Pass OCR Token Engine...' },
             { width: '80%', text: '3/4 Validating against Legal Metrology Rules, 2011 Rule 6(1)...' },
             { width: '95%', text: '4/4 Generating visual bounding box evidence map & audit index...' }
         ];
@@ -322,13 +383,13 @@ function setupFormSubmission() {
         let stepIndex = 0;
         const interval = setInterval(function () {
             if (stepIndex < steps.length) {
-                progressBar.style.width = steps[stepIndex].width;
-                progressStepText.innerText = steps[stepIndex].text;
+                if (progressBar) progressBar.style.width = steps[stepIndex].width;
+                if (progressStepText) progressStepText.innerText = steps[stepIndex].text;
                 stepIndex++;
             } else {
                 clearInterval(interval);
             }
-        }, 600);
+        }, 700);
     });
 }
 
@@ -837,6 +898,7 @@ document.addEventListener('DOMContentLoaded', function () {
         contentId: 'frontDropzoneContent', previewBoxId: 'frontPreviewBox',
         previewImgId: 'frontPreviewImg', nameId: 'frontFileName',
         removeBtnId: 'removeFrontBtn', retakeBtnId: 'retakeFrontBtn',
+        replaceBtnId: 'replaceFrontBtn',
         cameraBtnId: 'frontCameraBtn', cameraLabel: 'Take Front Photo'
     });
 
@@ -845,6 +907,7 @@ document.addEventListener('DOMContentLoaded', function () {
         contentId: 'backDropzoneContent', previewBoxId: 'backPreviewBox',
         previewImgId: 'backPreviewImg', nameId: 'backFileName',
         removeBtnId: 'removeBackBtn', retakeBtnId: 'retakeBackBtn',
+        replaceBtnId: 'replaceBackBtn',
         cameraBtnId: 'backCameraBtn', cameraLabel: 'Take Back Photo'
     });
 

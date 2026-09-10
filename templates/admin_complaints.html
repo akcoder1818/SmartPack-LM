@@ -7,20 +7,20 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
             <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-warning text-dark fw-bold">Admin Enforcement Console</span>
-                <span class="text-muted small">Total Complaints: {{ total_count }}</span>
+                <span class="badge bg-warning text-dark fw-bold">{{ t('admin_console_badge') }}</span>
+                <span class="text-muted small">Total: {{ total_count }}</span>
             </div>
-            <h2 class="fw-bold text-navy mb-0">Citizen Grievance Redressal Roster</h2>
-            <p class="small text-muted mb-0">Review consumer packaged commodity violations and update enforcement status.</p>
+            <h2 class="fw-bold text-navy mb-0">{{ t('admin_grievance_roster_title') }}</h2>
+            <p class="small text-muted mb-0">{{ t('admin_grievance_roster_sub') }}</p>
         </div>
         <div class="d-flex gap-2">
             <a href="{{ url_for('dashboard') }}" class="btn btn-outline-navy d-flex align-items-center gap-1">
                 <i class="bi bi-speedometer2"></i>
-                <span>Dashboard</span>
+                <span>{{ t('nav_dashboard') }}</span>
             </a>
             <a href="{{ url_for('inspection_history') }}" class="btn btn-outline-secondary d-flex align-items-center gap-1">
                 <i class="bi bi-clock-history"></i>
-                <span>All Inspections</span>
+                <span>{{ t('nav_all_inspections') }}</span>
             </a>
         </div>
     </div>
@@ -37,7 +37,7 @@
                 </div>
                 <div class="col-md-3">
                     <select name="status" class="form-select form-select-sm">
-                        <option value="ALL" {% if status_filter == 'ALL' or not status_filter %}selected{% endif %}>All Statuses</option>
+                        <option value="ALL" {% if status_filter == 'ALL' or not status_filter %}selected{% endif %}>{{ t('filter_all') }}</option>
                         <option value="Submitted" {% if status_filter == 'Submitted' %}selected{% endif %}>Submitted</option>
                         <option value="Under Review" {% if status_filter == 'Under Review' %}selected{% endif %}>Under Review</option>
                         <option value="Resolved" {% if status_filter == 'Resolved' %}selected{% endif %}>Resolved</option>
@@ -46,10 +46,10 @@
                 </div>
                 <div class="col-md-4 d-flex gap-2">
                     <button type="submit" class="btn btn-sm btn-navy px-3 rounded-pill fw-semibold">
-                        <i class="bi bi-funnel me-1"></i> Filter
+                        <i class="bi bi-funnel me-1"></i> {{ t('filter_btn') }}
                     </button>
                     <a href="{{ url_for('admin_complaints') }}" class="btn btn-sm btn-outline-secondary px-3 rounded-pill">
-                        Reset
+                        {{ t('reset_btn') }}
                     </a>
                 </div>
             </form>
@@ -64,12 +64,12 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light small text-uppercase">
                         <tr>
-                            <th class="ps-3">Grievance No.</th>
-                            <th>Complainant</th>
-                            <th>Product &amp; Retailer</th>
-                            <th>Date Filed</th>
-                            <th class="text-center">Status</th>
-                            <th class="text-end pe-3">Update / Review</th>
+                            <th class="ps-3">{{ t('th_grievance_no') }}</th>
+                            <th>{{ t('lbl_complainant_name') }}</th>
+                            <th>{{ t('th_product') }} &amp; {{ t('th_retailer_details') }}</th>
+                            <th>{{ t('th_date_filed') }}</th>
+                            <th class="text-center">{{ t('th_status') }}</th>
+                            <th class="text-end pe-3">{{ t('th_actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -99,7 +99,7 @@
                             </td>
                             <td class="text-end pe-3">
                                 <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#updateModal{{ c.id }}">
-                                    <i class="bi bi-pencil-square me-1"></i> Update Status
+                                    <i class="bi bi-pencil-square me-1"></i> {{ t('btn_update_status') }}
                                 </button>
 
                                 <!-- Status Update Modal -->
@@ -108,12 +108,12 @@
                                         <div class="modal-content border-0 shadow">
                                             <form method="POST" action="{{ url_for('admin_update_complaint_status', complaint_id=c.id) }}">
                                                 <div class="modal-header bg-navy text-white">
-                                                    <h6 class="modal-title fw-bold">Update Grievance {{ c.complaint_no }}</h6>
+                                                    <h6 class="modal-title fw-bold">{{ t('modal_update_grievance') }} {{ c.complaint_no }}</h6>
                                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <div class="modal-body p-4">
                                                     <div class="mb-3">
-                                                        <label class="form-label fw-bold small text-dark">Action Status</label>
+                                                        <label class="form-label fw-bold small text-dark">{{ t('lbl_action_status') }}</label>
                                                         <select name="status" class="form-select">
                                                             <option value="Submitted" {% if c.status == 'Submitted' %}selected{% endif %}>Submitted</option>
                                                             <option value="Under Review" {% if c.status == 'Under Review' %}selected{% endif %}>Under Review</option>
@@ -122,13 +122,13 @@
                                                         </select>
                                                     </div>
                                                     <div class="mb-3">
-                                                        <label class="form-label fw-bold small text-dark">Officer Action Notes / Resolution Details</label>
+                                                        <label class="form-label fw-bold small text-dark">{{ t('lbl_officer_action_notes') }}</label>
                                                         <textarea name="admin_notes" class="form-control" rows="3" placeholder="Enter enforcement details, notice issued, or resolution explanation...">{{ c.admin_notes or '' }}</textarea>
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn btn-outline-secondary rounded-pill btn-sm" data-bs-dismiss="modal">Cancel</button>
-                                                    <button type="submit" class="btn btn-navy rounded-pill btn-sm px-3 fw-bold">Save Status</button>
+                                                    <button type="button" class="btn btn-outline-secondary rounded-pill btn-sm" data-bs-dismiss="modal">{{ t('btn_cancel') }}</button>
+                                                    <button type="submit" class="btn btn-navy rounded-pill btn-sm px-3 fw-bold">{{ t('btn_save_status') }}</button>
                                                 </div>
                                             </form>
                                         </div>
@@ -143,8 +143,8 @@
             {% else %}
             <div class="p-5 text-center text-muted">
                 <i class="bi bi-inbox fs-1 text-secondary opacity-50 mb-3 d-block"></i>
-                <h5 class="fw-bold text-dark">No Grievances Found</h5>
-                <p class="small text-muted mb-0">No complaints matching the selected filter criteria.</p>
+                <h5 class="fw-bold text-dark">{{ t('no_grievances_admin') }}</h5>
+                <p class="small text-muted mb-0">{{ t('no_grievances_admin_desc') }}</p>
             </div>
             {% endif %}
         </div>
