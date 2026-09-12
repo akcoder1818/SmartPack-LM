@@ -122,7 +122,7 @@ def assess_compliance(extracted_fields, custom_rules=None):
                 else:
                     eval_item["status"] = "PASS"
                     eval_item["findings"] = "MRP format detected."
-                    earned_weight += (weight * 0.8)
+                    earned_weight += (weight * 0.85)
 
             elif field_name == "net_quantity":
                 is_std = field_info.get("is_standard_unit", False)
@@ -178,7 +178,7 @@ def assess_compliance(extracted_fields, custom_rules=None):
                     eval_item["status"] = "REVIEW"
                     eval_item["findings"] = "Consumer Care cell declared without explicit toll-free phone number or email."
                     eval_item["corrective_action"] = "Provide valid telephone number and email address for consumer grievance redressal."
-                    earned_weight += (weight * 0.4)
+                    earned_weight += (weight * 0.5)
                     detected_issues.append({
                         "rule_id": rule_id,
                         "field": field_name,
@@ -210,6 +210,16 @@ def assess_compliance(extracted_fields, custom_rules=None):
                         "rule_reference": rule_ref
                     })
 
+            elif field_name == "country_of_origin":
+                eval_item["status"] = "PASS"
+                eval_item["findings"] = f"Country of origin verified ({extracted_value})."
+                earned_weight += weight
+
+            elif field_name == "product_name":
+                eval_item["status"] = "PASS"
+                eval_item["findings"] = f"Generic / Common name declaration verified ({extracted_value})."
+                earned_weight += weight
+
             else:
                 eval_item["status"] = "PASS"
                 eval_item["findings"] = f"Declaration verified ({extracted_value})."
@@ -220,8 +230,11 @@ def assess_compliance(extracted_fields, custom_rules=None):
 
         rule_evaluations.append(eval_item)
 
-    # Count legitimately verified declarations
-    verified_count = sum(1 for r in rule_evaluations if r.get("status") == "PASS")
+    # Count breakdown
+    pass_count = sum(1 for r in rule_evaluations if r.get("status") == "PASS")
+    review_count = sum(1 for r in rule_evaluations if r.get("status") == "REVIEW")
+    fail_count = sum(1 for r in rule_evaluations if r.get("status") == "FAIL")
+    verified_count = pass_count
     detected_count = sum(1 for r in rule_evaluations if r.get("extracted_value"))
 
     # Compute overall compliance score
@@ -230,8 +243,11 @@ def assess_compliance(extracted_fields, custom_rules=None):
     else:
         compliance_score = 0.0
 
-    # Determine overall status classification
-    critical_fails = any(iss.get("severity") == "CRITICAL" for iss in detected_issues)
+    # Determine overall status classification:
+    # A true critical fail occurs ONLY when a mandatory required rule has status == 'FAIL'
+    critical_fails = any(r.get("required") and r.get("status") == "FAIL" for r in rule_evaluations)
+    
+    # Insufficient evidence: zero declarations or only 1 declaration detected
     is_insufficient = (detected_count == 0 or (detected_count == 1 and not any(r.get("field") == "mrp" and r.get("status") == "PASS" for r in rule_evaluations)))
 
     if is_insufficient:
@@ -242,26 +258,33 @@ def assess_compliance(extracted_fields, custom_rules=None):
             "Mandatory statutory declarations under Rule 6(1) could not be detected on the package image. "
             "Please ensure a clear, well-lit photograph of the statutory declaration label is captured."
         )
-    elif compliance_score >= 85.0 and not critical_fails:
+    elif critical_fails:
+        overall_status = "NON-COMPLIANT"
+        summary_text = (
+            f"Assessed {len(rule_evaluations)} statutory rules. "
+            f"Calculated Legal Metrology Compliance Index: {compliance_score}% ({overall_status}). "
+            f"Detected {len(detected_issues)} non-compliance violations under Legal Metrology Rules, 2011."
+        )
+    elif compliance_score >= 85.0 and review_count == 0:
         overall_status = "COMPLIANT"
         summary_text = (
             f"Assessed {len(rule_evaluations)} statutory rules. "
             f"Calculated Legal Metrology Compliance Index: {compliance_score}% ({overall_status}). "
-            f"Detected {len(detected_issues)} discrepancies requiring inspection officer review."
+            f"All mandatory statutory declarations verified compliant with Legal Metrology Rules, 2011."
         )
-    elif compliance_score >= 60.0 and not critical_fails:
+    elif compliance_score >= 60.0:
         overall_status = "NEEDS REVIEW"
         summary_text = (
             f"Assessed {len(rule_evaluations)} statutory rules. "
             f"Calculated Legal Metrology Compliance Index: {compliance_score}% ({overall_status}). "
-            f"Detected {len(detected_issues)} discrepancies requiring inspection officer review."
+            f"Detected {len(detected_issues)} items requiring inspection officer review."
         )
     else:
         overall_status = "NON-COMPLIANT"
         summary_text = (
             f"Assessed {len(rule_evaluations)} statutory rules. "
             f"Calculated Legal Metrology Compliance Index: {compliance_score}% ({overall_status}). "
-            f"Detected {len(detected_issues)} discrepancies requiring inspection officer review."
+            f"Detected {len(detected_issues)} non-compliance violations under Legal Metrology Rules, 2011."
         )
 
     return {
@@ -272,5 +295,7 @@ def assess_compliance(extracted_fields, custom_rules=None):
         "summary": summary_text,
         "is_insufficient_evidence": is_insufficient,
         "verified_count": verified_count,
+        "review_count": review_count,
+        "fail_count": fail_count,
         "detected_count": detected_count
     }

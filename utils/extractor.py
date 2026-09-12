@@ -9,8 +9,42 @@ def normalize_text(text):
     """Clean and normalize OCR text for consistent pattern matching."""
     if not text:
         return ""
-    # Normalize common OCR currency quirks
-    t = text.replace("₹", " Rs. ").replace("Rs.", " Rs. ").replace("Rs ", " Rs. ")
+    
+    t = text
+    # 1. Normalize Devanagari numerals to standard ASCII digits (Tesseract eng+hin)
+    devanagari_to_ascii = str.maketrans({
+        '०': '0', '१': '1', '२': '2', '३': '3', '४': '4',
+        '५': '5', '६': '6', '७': '7', '८': '8', '९': '9'
+    })
+    t = t.translate(devanagari_to_ascii)
+
+    # 2. Normalize smart quotes and OCR symbol artifacts
+    t = t.replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
+
+    # 3. Currency normalization
+    t = t.replace("₹", " Rs. ")
+    t = re.sub(r'\b(?:Rs\.|Rs|INR|Re\.|Re)\b', ' Rs. ', t, flags=re.IGNORECASE)
+
+    # 4. Common OCR word concatenations on statutory declarations
+    t = re.sub(r'\bNet\s*Weight\b', 'Net Weight', t, flags=re.IGNORECASE)
+    t = re.sub(r'\bNetWeight\b', 'Net Weight', t, flags=re.IGNORECASE)
+    t = re.sub(r'\bNetContents\b', 'Net Contents', t, flags=re.IGNORECASE)
+    t = re.sub(r'\bNetQuantity\b', 'Net Quantity', t, flags=re.IGNORECASE)
+    t = re.sub(r'\bNetQty\b', 'Net Qty', t, flags=re.IGNORECASE)
+    t = re.sub(r'\bCountryofOrigin\b', 'Country of Origin', t, flags=re.IGNORECASE)
+    t = re.sub(r'\bConsumerCare\b', 'Consumer Care', t, flags=re.IGNORECASE)
+    t = re.sub(r'\bUnitSalePrice\b', 'Unit Sale Price', t, flags=re.IGNORECASE)
+    t = re.sub(r'\bGenericName\b', 'Generic Name', t, flags=re.IGNORECASE)
+
+    # 5. Common OCR tax clause concatenations: ofaltaxes -> of all taxes, ofall -> of all, etc.
+    t = re.sub(r'\bofaltaxes\b', 'of all taxes', t, flags=re.IGNORECASE)
+    t = re.sub(r'\bofall\s*taxes\b', 'of all taxes', t, flags=re.IGNORECASE)
+    t = re.sub(r'\binclusiveof\b', 'inclusive of ', t, flags=re.IGNORECASE)
+    t = re.sub(r'\binclof\b', 'incl of ', t, flags=re.IGNORECASE)
+
+    # 6. Common OCR spaces in email addresses: e.g. "feedback @ britannia.co.in"
+    t = re.sub(r'([a-zA-Z0-9_.+-]+)\s*@\s*([a-zA-Z0-9-.]+)\s*\.\s*([a-zA-Z]{2,})', r'\1@\2.\3', t)
+
     t = re.sub(r'[\t\r]+', ' ', t)
     return t
 
@@ -21,8 +55,9 @@ def extract_mrp(full_text, tokens=None):
     - Numeric value
     - Currency symbol (₹ / Rs. / INR)
     - 'inclusive of all taxes' or 'incl. of all taxes' declaration
-    Tolerates common OCR punctuation, spacing, and label variants (M.R.P., MRP ₹, MRP Rs, MRP INR, Max Retail Price).
-    Does NOT treat arbitrary numbers without an MRP context as MRP.
+    Tolerates common OCR punctuation, spacing, and label variants:
+      M.R.P., MRP ₹, MRP Rs, MRP INR, Max Retail Price, Maximum Retail Price (MRP),
+      and multiline tax inclusion declarations.
     """
     result = {
         "value": None,
@@ -38,59 +73,79 @@ def extract_mrp(full_text, tokens=None):
     if not full_text:
         return result
 
-    # Pattern for MRP with currency and optional taxes clause
+    # Comprehensive tax inclusion pattern
+    tax_pattern = r'(?:\(?\s*(?:incl\.?|inclusive|inc\.?)\s*(?:of)?\s*(?:all)?\s*taxes?\s*\)?|\ball\s*taxes\s*incl(?:uded|usive)?\b|\btaxes\s*incl(?:uded|usive)?\b|\bincl\.?\s*taxes?\b|\bof\s*all\s*taxes\b|\bofaltaxes\b)'
+
+    # Pattern 1: Structured MRP declaration with optional (MRP) subtag or tax clause
     mrp_regex = re.compile(
-        r'(?:M\.?\s*R\.?\s*P\.?|Maximum\s+Retail\s+Price|Max\.?\s*Retail\s*Price|Retail\s+Price)\s*[:.\-_=~;]?\s*'
-        r'([₹RsINR\.\s]*)\s*(\d+(?:[.,]\d{1,2})?)\s*'
-        r'(\(?\s*(?:incl\.?|inclusive|inc\.?)\s*(?:of)?\s*(?:all)?\s*taxes\s*\)?)?',
+        r'(?:M\.?\s*R\.?\s*P\.?|Maximum\s+Retail\s+Price(?:\s*\(?\s*MRP\s*\)?)?|Max\.?\s*Retail\s*Price|Retail\s+Price)\s*'
+        r'(?:' + tax_pattern + r')?\s*[:.\-_=~;]?\s*'
+        r'([₹RsINR\.\s]*)\s*(\d+(?:[.,]\d{1,2})?)\s*(?:/[-–])?\s*'
+        r'(' + tax_pattern + r')?',
         re.IGNORECASE
     )
 
     match = mrp_regex.search(full_text)
+    val_float = None
+
     if match:
         curr_part = match.group(1).strip()
         amt_part = match.group(2).replace(',', '.').strip()
-
         try:
             val_float = float(amt_part)
             result["amount"] = val_float
             result["value"] = f"Rs. {val_float:.2f}"
             result["raw_text"] = match.group(0).strip()
-            
-            # Check currency symbol
-            has_currency = bool(re.search(r'[₹RsINR]', curr_part, re.IGNORECASE) or 'rs' in match.group(0).lower() or '₹' in match.group(0) or 'inr' in match.group(0).lower())
-            result["currency"] = "INR" if has_currency else None
-
-            # Check inclusive of all taxes in match or nearby text (up to 120 chars)
-            taxes_window = full_text[match.start():min(len(full_text), match.start() + 120)]
-            has_tax = bool(re.search(r'\b(?:incl\.?|inclusive|inc\.?)\b.*?\btaxes\b|\b(?:incl\.?|inclusive)\s*(?:of)?\s*(?:all)?\s*taxes\b|inclusive\s*of\s*all\s*taxes', taxes_window, re.IGNORECASE) or match.group(3))
-            result["has_taxes_declaration"] = has_tax
-
-            # Confidence score calculation
-            conf = 0.5
-            if has_currency:
-                conf += 0.25
-            if has_tax:
-                conf += 0.25
-            result["confidence"] = round(conf, 2)
-            result["status"] = "PASS" if (has_currency and has_tax) else "REVIEW"
-
         except ValueError:
             pass
 
-    # If full regex failed, try loose search ONLY with an explicit MRP keyword context
-    if not result["value"]:
-        loose = re.search(r'(?:M\.?\s*R\.?\s*P\.?|Max(?:imum)?\.?\s*Retail\s*Price|Retail\s*Price)\s*[:.\-_=~;]?[^\d\n]*(\d+(?:[.,]\d{1,2})?)', full_text, re.IGNORECASE)
+    # Pattern 2: Fallback loose search with MRP keyword context
+    if val_float is None:
+        loose = re.search(
+            r'(?:M\.?\s*R\.?\s*P\.?|Maximum\s+Retail\s+Price(?:\s*\(?\s*MRP\s*\)?)?|Max(?:imum)?\.?\s*Retail\s*Price|Retail\s*Price)\s*'
+            r'[:.\-_=~;]?[^\d\n\r]*?([₹RsINR\.\s]*)\s*(\d+(?:[.,]\d{1,2})?)',
+            full_text,
+            re.IGNORECASE
+        )
         if loose:
             try:
-                amt = float(loose.group(1).replace(',', '.'))
+                amt = float(loose.group(2).replace(',', '.'))
+                val_float = amt
                 result["amount"] = amt
                 result["value"] = f"Rs. {amt:.2f}"
                 result["raw_text"] = loose.group(0).strip()
-                result["confidence"] = 0.45
-                result["status"] = "REVIEW"
-            except ValueError:
+                match = loose
+            except (ValueError, IndexError):
                 pass
+
+    if val_float is not None and match:
+        # Check currency symbol in match and surrounding window (up to 60 chars)
+        match_start = match.start()
+        match_end = match.end()
+        curr_window = full_text[max(0, match_start - 30):min(len(full_text), match_end + 30)]
+        has_currency = bool(
+            re.search(r'[₹]|(?:\b(?:Rs\.?|INR|Rupees?)\b)', curr_window, re.IGNORECASE) or
+            'rs' in match.group(0).lower() or
+            '₹' in match.group(0) or
+            'inr' in match.group(0).lower()
+        )
+        result["currency"] = "INR" if has_currency else None
+
+        # Check inclusive of all taxes in match or surrounding lines (up to 150 chars forward and backward)
+        taxes_window = full_text[max(0, match_start - 60):min(len(full_text), match_end + 150)]
+        has_tax = bool(re.search(tax_pattern, taxes_window, re.IGNORECASE))
+        result["has_taxes_declaration"] = has_tax
+
+        # Confidence and status calculation
+        if has_currency and has_tax:
+            result["confidence"] = 0.95
+            result["status"] = "PASS"
+        elif has_currency:
+            result["confidence"] = 0.75
+            result["status"] = "REVIEW"  # Tax clause absent/unclear
+        else:
+            result["confidence"] = 0.50
+            result["status"] = "REVIEW"
 
     # Find bounding box from tokens
     if tokens and result["raw_text"]:
@@ -107,8 +162,7 @@ def extract_net_quantity(full_text, tokens=None):
     Extracts Net Quantity declaration under Rule 6(1)(c) & Rule 11.
     Validates standard SI metric units (g, kg, ml, l, m, cm, N/units).
     Flags non-standard units (lbs, dozen, oz).
-    Tolerates localized OCR substitutions (e.g. '250 9' -> '250 g', 'm1' -> 'ml')
-    ONLY when directly preceded by an explicit Net Quantity declaration context.
+    Tolerates localized OCR substitutions (e.g. '250 9' -> '250 g', 'm1' -> 'ml', 'Ibs' -> 'lbs').
     """
     result = {
         "value": None,
@@ -125,14 +179,15 @@ def extract_net_quantity(full_text, tokens=None):
         return result
 
     # Standard SI units vs non-standard
-    valid_units = r'(?:kg|kilograms?|g|gms?|grams?|mg|milligrams?|ml|millilitres?|milliliters?|l|ltr|litres?|liters?|m|metres?|meters?|cm|centimetres?|centimeters?|mm|units?|pcs|pieces?|n|count)'
-    non_std_units = r'(?:dozen|gross|tola|seer|pounds?|lbs?|oz|ounces?|pao)'
+    valid_units = r'(?:kg|kilograms?|g|gms?|grams?|mg|milligrams?|ml|millilitres?|milliliters?|l|ltr|ltrs?|litres?|liters?|m|metres?|meters?|cm|centimetres?|centimeters?|mm|units?|pcs|pieces?|n|count)'
+    # Non-standard units under Rule 11 (including OCR variants like Ibs with capital I or 1bs)
+    non_std_units = r'(?:dozen|gross|tola|seer|pounds?|lbs?|Ibs|1bs|oz|ounces?|pao)'
     ocr_units = r'(?:9|k9|m1)'
 
     # Explicit declaration prefix
-    net_prefix = r'(?:Net\s*(?:Quantity|Qty|Weight|Wt|Volume|Vol|Contents?|Content|Qnty)?|Quantity|Qty|Weight|Net)\s*[:.\-_=~;]?'
+    net_prefix = r'(?:Net\s*(?:Quantity|Qty|Weight|Wt|Mass|Volume|Vol|Contents?|Content|Qnty)?|Quantity|Qty|Weight|Wt|Net)\s*[:.\-_=~;]?'
 
-    # Pattern 1: Explicit declaration prefix (allows localized OCR unit substitutions like '9' for 'g')
+    # Pattern 1: Explicit declaration prefix (allows localized OCR unit substitutions like '9' for 'g', 'Ibs' for 'lbs')
     qty_regex = re.compile(
         net_prefix + r'\s*(\d+(?:\.\d+)?)\s*(' + valid_units + r'|' + non_std_units + r'|' + ocr_units + r')\b',
         re.IGNORECASE
@@ -142,14 +197,14 @@ def extract_net_quantity(full_text, tokens=None):
     is_ocr_substituted = False
 
     if not match:
-        # Pattern 2: Standalone number + standard unit (STRICT: ocr_units like '9' are strictly disallowed here)
+        # Pattern 2: Standalone number + standard unit
         match = re.search(r'\b(\d+(?:\.\d+)?)\s*(' + valid_units + r'|' + non_std_units + r')\b', full_text, re.IGNORECASE)
 
     if match:
         val_str = match.group(1)
         unit_raw = match.group(2).lower()
         
-        # Localized unit normalization for recognized OCR substitutions under declaration prefix
+        # Localized unit normalization
         if unit_raw == '9':
             unit_str = 'g'
             is_ocr_substituted = True
@@ -159,6 +214,8 @@ def extract_net_quantity(full_text, tokens=None):
         elif unit_raw == 'm1':
             unit_str = 'ml'
             is_ocr_substituted = True
+        elif unit_raw in ('ibs', '1bs', 'lb', 'lbs'):
+            unit_str = 'lbs'
         else:
             unit_str = unit_raw
 
@@ -170,15 +227,16 @@ def extract_net_quantity(full_text, tokens=None):
             result["raw_text"] = match.group(0).strip()
 
             # Check if unit is standard SI
-            is_non_std = bool(re.match(r'^' + non_std_units + r'$', unit_str, re.IGNORECASE))
+            is_non_std = bool(re.match(r'^(?:dozen|gross|tola|seer|pounds?|lbs?|Ibs|1bs|oz|ounces?|pao)$', unit_str, re.IGNORECASE))
             result["is_standard_unit"] = not is_non_std
 
             if result["is_standard_unit"]:
                 result["confidence"] = 0.90 if is_ocr_substituted else 0.95
                 result["status"] = "PASS"
             else:
-                result["confidence"] = 0.60
-                result["status"] = "REVIEW"  # Non-standard unit flag (Rule 11)
+                # Non-standard unit detected -> Report FAIL under Rule 11 (actionable violation, NOT missing)
+                result["confidence"] = 0.85
+                result["status"] = "FAIL"
         except ValueError:
             pass
 
@@ -195,8 +253,8 @@ def extract_net_quantity(full_text, tokens=None):
 def extract_manufacturing_date(full_text, tokens=None):
     """
     Extracts Month and Year of Manufacture / Packaging under Rule 6(1)(d).
-    Accepts MM/YYYY, MM/YY, MMM-YYYY, DD/MM/YYYY, YYYY.
-    Tolerates small OCR variations (e.g. 'Date of Mfy', 'Date of MfG', 'Date of Manufacture').
+    Accepts MM/YYYY, MM/YY, MMM-YYYY, MMM/YYYY, DD/MM/YYYY, YYYY.
+    Tolerates OCR variations (e.g. 'Date of ig', 'Date of mg', 'Date of Mfy', 'PKD ON:', 'MFD:').
     """
     result = {
         "value": None,
@@ -211,8 +269,12 @@ def extract_manufacturing_date(full_text, tokens=None):
         return result
 
     date_patterns = [
-        r'(?:Date\s*of\s*Mf[gyG]|Date\s*of\s*Manufacture|Date\s*of\s*Packaging|Date\s*of\s*Packing|Manufacturing\s*Date|Mfg\.?\s*(?:Date|Dt)?|Mfy\.?\s*(?:Date|Dt)?|Mfd\.?\s*(?:Date|Dt)?|Pkg\.?\s*(?:Date|Dt)?|Packed\s*(?:on|Date|Dt)?|MFD|PKD|MFY)\s*[:.\-_=~;]?\s*([A-Za-z]{3}\s*[-/.]\s*\d{2,4}|\d{1,2}\s*[-/.]\s*\d{2,4}|\d{4})',
-        r'(?:Manufactured|Packed)\s*[:.\-_=~;]?\s*(\d{1,2}\s*[-/.]\s*\d{2,4}|[A-Za-z]{3}\s*[-/.]\s*\d{2,4})'
+        # Standard explicit headers with date values
+        r'(?:Date\s*of\s*(?:Mf[gyG]|ig|mg|Manufacture|Packaging|Packing|Pkg|PKD)|Manufacturing\s*Date|Packaging\s*Date|Packing\s*Date|Packed\s*on|Manufactured\s*on|Mfg\.?\s*(?:Date|Dt)?|Mfy\.?\s*(?:Date|Dt)?|Mfd\.?\s*(?:Date|Dt)?|Pkg\.?\s*(?:Date|Dt)?|PKD\.?\s*(?:Date|Dt|ON)?|MFD\.?\s*(?:Date|Dt|ON)?|MFG\.?|DOM\.?|D\.O\.M\.?|DOP\.?|D\.O\.P\.?|Month\s*(?:&|and)\s*Year\s*of\s*(?:Mfg|Packaging|Manufacture)|Mth\s*(?:&|and)\s*Yr\s*of\s*(?:Mfg|Packaging))\s*[:.\-_=~;]?\s*([A-Za-z]{3,9}\s*[-/.]\s*\d{2,4}|\d{1,2}\s*[-/.]\s*\d{2,4}|\d{4})',
+        # Catch manufactured or packed followed by date
+        r'(?:Manufactured|Packed)\s*[:.\-_=~;]?\s*(\d{1,2}\s*[-/.]\s*\d{2,4}|[A-Za-z]{3,9}\s*[-/.]\s*\d{2,4})',
+        # Tolerant catch: "Date of ... : MM/YYYY"
+        r'(?:Date\s*of\s*[A-Za-z.]+)\s*[:.\-_=~;]?\s*([A-Za-z]{3,9}\s*[-/.]\s*\d{2,4}|\d{1,2}\s*[-/.]\s*\d{2,4})'
     ]
 
     for pattern in date_patterns:
@@ -236,7 +298,7 @@ def extract_manufacturing_date(full_text, tokens=None):
     if tokens and result["raw_text"]:
         for tok in tokens:
             t_lower = tok["text"].lower()
-            if "mfg" in t_lower or "mfy" in t_lower or "pkd" in t_lower or "packed" in t_lower:
+            if "mfg" in t_lower or "mfy" in t_lower or "pkd" in t_lower or "packed" in t_lower or "date" in t_lower:
                 result["bbox"] = tok["bbox"]
                 break
 
@@ -245,7 +307,7 @@ def extract_manufacturing_date(full_text, tokens=None):
 def extract_best_before(full_text, tokens=None):
     """
     Extracts Best Before / Expiry declaration under Rule 6(1)(d) Proviso.
-    Tolerates OCR variants like 'Best Bef', 'Best Bfore', 'Use Before', 'Expiry Date'.
+    Tolerates OCR variants like 'Best Bef', 'Best Bfore', 'Best Before:9 Before: Months', 'Use Before', 'Expiry Date'.
     """
     result = {
         "value": None,
@@ -260,13 +322,16 @@ def extract_best_before(full_text, tokens=None):
 
     bb_regex = re.compile(
         r'(?:Best\s*(?:Before|Bef|Bfore|Befor)|Use\s*(?:Before|By)|Date\s*of\s*Expiry|Expiry\s*(?:Date|Dt)?|Exp\.?\s*(?:Date|Dt)?|Exp\.)\s*[:.\-_=~;]?\s*'
-        r'(\d{1,2}\s*(?:Months?|Years?|Days?|Mths?|Yrs?)(?:\s*from\s*(?:date\s*of\s*)?(?:mfg|packaging|manufacture|pkg|mfd|mfy))?|\d{1,2}\s*[-/.]\s*\d{2,4}|[A-Za-z]{3}\s*[-/.]\s*\d{2,4})',
+        r'(\d{1,2}(?:\s*(?:Before:?|Bef:?))?\s*(?:Months?|Years?|Days?|Mths?|Yrs?)(?:\s*from\s*(?:date\s*of\s*)?(?:mfg|packaging|manufacture|pkg|mfd|mfy|packing))?|\d{1,2}\s*[-/.]\s*\d{2,4}|[A-Za-z]{3}\s*[-/.]\s*\d{2,4})',
         re.IGNORECASE
     )
 
     match = bb_regex.search(full_text)
     if match:
-        result["value"] = match.group(1).strip()
+        val = match.group(1).strip()
+        # Clean potential OCR stutter like "9 Before: Months" -> "9 Months"
+        val = re.sub(r'(\d{1,2})\s*(?:Before:?|Bef:?)\s*', r'\1 ', val, flags=re.IGNORECASE)
+        result["value"] = val
         result["raw_text"] = match.group(0).strip()
         result["confidence"] = 0.88
         result["status"] = "PASS"
@@ -284,7 +349,7 @@ def extract_consumer_care(full_text, tokens=None):
     """
     Extracts Consumer Care details under Rule 6(1)(f) & Rule 6(2).
     Requires contact channels (Toll-free/phone number, email, address).
-    Supports Consumer Care, Customer Care, Consumer Complaint, Helpline, Grievance Cell.
+    Supports Consumer Care, Consumer Care Gel/Cell, Customer Care, Consumer Complaint, Helpline, Grievance Cell.
     """
     result = {
         "value": None,
@@ -301,7 +366,7 @@ def extract_consumer_care(full_text, tokens=None):
     if not full_text:
         return result
 
-    # Correct regex for phone numbers (toll-free 1800, 10-digit mobile with optional +91, and landline)
+    # Phone numbers: toll-free 1800, mobile with optional +91, landline
     phone_match = re.search(
         r'(?:Toll\s*Free|Helpline|Tel|Call|Phone|Contact|Care\s*No)?\s*[:.\-_=~;]?\s*'
         r'(\b1800[- ]?\d{3,4}[- ]?\d{3,4}\b|(?:\+?91[- ]?)?[6-9]\d{9}\b|\b0\d{2,4}[- ]?\d{6,8}\b|\b\d{10}\b)',
@@ -311,12 +376,13 @@ def extract_consumer_care(full_text, tokens=None):
     if phone_match:
         result["phone"] = phone_match.group(1).strip()
 
+    # Email pattern: handles normalized and raw email formats
     email_match = re.search(r'([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)', full_text)
     if email_match:
         result["email"] = email_match.group(1).strip()
 
     cc_header_match = re.search(
-        r'(?:Consumer\s*Care(?:\s*(?:Cell|No\.?|Number))?|Consumer\s*Complaint(?:\s*(?:Cell|No\.?))?|Customer\s*Care(?:\s*(?:Cell|No\.?|Number))?|Customer\s*Feedback|Grievance\s*Cell|Reach\s*Us\s*At)[^:\n]*[:.\-_=~;]?(.*?)(?:\n|$)',
+        r'(?:Consumer\s*Care(?:\s*(?:Cell|Gel|No\.?|Number))?|Consumer\s*Complaint(?:\s*(?:Cell|Gel|No\.?))?|Customer\s*Care(?:\s*(?:Cell|Gel|No\.?|Number))?|Customer\s*(?:Feedback|Support)|Grievance\s*Cell|Reach\s*Us\s*At)[^:\n]*[:.\-_=~;]?(.*?)(?:\n|$)',
         full_text,
         re.IGNORECASE
     )
@@ -335,7 +401,7 @@ def extract_consumer_care(full_text, tokens=None):
         result["value"] = " | ".join(parts)
         channels = (1 if result["phone"] else 0) + (1 if result["email"] else 0)
         result["has_multi_channel"] = channels >= 2
-        conf = 0.5 + (0.25 * channels)
+        conf = 0.60 + (0.20 * channels)
         result["confidence"] = min(conf, 0.95)
         result["status"] = "PASS" if channels >= 1 else "REVIEW"
 
@@ -351,8 +417,8 @@ def extract_consumer_care(full_text, tokens=None):
 def extract_country_of_origin(full_text, tokens=None):
     """
     Extracts Country of Origin under Rule 6(1)(g).
-    Tolerates OCR variants like 'Country Of Orlgin', 'Made in', 'Product of'.
-    Strictly avoids inferring India without explicit representation in OCR text.
+    Tolerates OCR variants like 'Country Of Orlgin', 'Made in', 'Product of', 'Country ofOrigin: Origin: India'.
+    Strictly prevents stop words ('Origin', 'Declaration', 'Absent') from being marked as country.
     """
     result = {
         "value": None,
@@ -366,6 +432,10 @@ def extract_country_of_origin(full_text, tokens=None):
     if not full_text:
         return result
 
+    # Check for explicit absent notice first (e.g. synthetic non-compliant sample notice)
+    if re.search(r'\[Notice:\s*Country\s*(?:of\s*origin)?\s*declaration\s*absent\]', full_text, re.IGNORECASE):
+        return result
+
     known_countries = [
         "India", "China", "USA", "United States", "Germany", "Japan", "Vietnam",
         "Thailand", "Bangladesh", "Indonesia", "Taiwan", "Korea", "South Korea",
@@ -373,44 +443,44 @@ def extract_country_of_origin(full_text, tokens=None):
     ]
     countries_regex = "|".join(known_countries)
 
+    # 1. Search for explicit Country of Origin declaration
     co_match = re.search(
-        r'(?:Country\s*of\s*(?:Origin|Orlgin|Origln|Origi|Orig)|Made\s*in|Product\s*of|Manufactured\s*in|Origin)\s*[:.\-_=~;]?\s*([A-Za-z\s]+)',
+        r'(?:Country\s*of\s*(?:Origin|Orlgin|Origln|Origi|Orig)|Made\s*in|Product\s*of|Manufactured\s*in|Origin)\s*'
+        r'(?:[:.\-_=~;]?\s*(?:Origin|Orlgin|Country))*\s*[:.\-_=~;]?\s*([^\n\r]+)',
         full_text,
         re.IGNORECASE
     )
 
     if co_match:
-        detected_text = co_match.group(1).strip()
+        context_str = co_match.group(1).strip()
+        # Look for a valid country in the captured context
         for c in known_countries:
-            if c.lower() in detected_text.lower():
+            if re.search(r'\b' + re.escape(c) + r'\b', context_str, re.IGNORECASE):
                 result["country"] = c
                 result["value"] = c
                 result["raw_text"] = co_match.group(0).strip()
                 result["confidence"] = 0.95
                 result["status"] = "PASS"
                 break
-        if not result["value"]:
-            first_word = detected_text.split()[0] if detected_text else ""
-            if len(first_word) > 2:
-                result["country"] = first_word.capitalize()
-                result["value"] = first_word.capitalize()
-                result["raw_text"] = co_match.group(0).strip()
-                result["confidence"] = 0.70
-                result["status"] = "PASS"
 
+    # 2. Search for direct "Made in <Country>" or "Product of <Country>" anywhere
     if not result["value"]:
-        direct = re.search(r'\b(Made\s*in\s*(' + countries_regex + r'))\b', full_text, re.IGNORECASE)
+        direct = re.search(r'\b(?:Made\s*in|Product\s*of|Origin\s*:?)\s*(' + countries_regex + r')\b', full_text, re.IGNORECASE)
         if direct:
-            result["country"] = direct.group(2).capitalize()
-            result["value"] = direct.group(2).capitalize()
-            result["raw_text"] = direct.group(1)
+            found_c = direct.group(1).capitalize()
+            # Canonicalize name
+            if found_c.lower() == "united states":
+                found_c = "USA"
+            result["country"] = found_c
+            result["value"] = found_c
+            result["raw_text"] = direct.group(0)
             result["confidence"] = 0.90
             result["status"] = "PASS"
 
     if tokens and result["raw_text"]:
         for tok in tokens:
             t_lower = tok["text"].lower()
-            if "origin" in t_lower or "orlgin" in t_lower or "made in" in t_lower or (result["country"] and result["country"].lower() in t_lower):
+            if "origin" in t_lower or "made in" in t_lower or (result["country"] and result["country"].lower() in t_lower):
                 result["bbox"] = tok["bbox"]
                 break
 
@@ -419,7 +489,8 @@ def extract_country_of_origin(full_text, tokens=None):
 def extract_manufacturer(full_text, tokens=None):
     """
     Extracts Manufacturer / Packer / Importer name & address under Rule 6(1)(a).
-    Supports 'Manufactured by', 'Manufacturer', 'Manufactured & Packed by', 'Packed by', 'Mfd by'.
+    Supports 'Manufactured by', 'Manufacturer', 'Manufactured & Packed by', 'Packed by', 'Mfd by', 'Marketed by'.
+    Captures multi-line addresses and verifies 6-digit postal PIN codes (including spaced PIN codes like '249 403').
     """
     result = {
         "value": None,
@@ -434,27 +505,42 @@ def extract_manufacturer(full_text, tokens=None):
         return result
 
     mfg_match = re.search(
-        r'(?:Manufactured\s*(?:&|and)\s*Packed\s*by|Manufactured\s*by|Manufacturer\s*(?:Name\s*&?\s*Address|Address)?|Mfg\.?\s*by|Mfd\.?\s*by|Packed\s*by|Pkd\.?\s*by|Marketed\s*by|Mktd\.?\s*by|Imported\s*by)\s*[:.\-_=~;]?\s*([^\n\r]+(?:\n[^\n\r]+)?)',
+        r'(?:Manufactured\s*(?:&|and)\s*(?:Packed|Marketed)\s*by|Manufactured\s*by|Manufacturer\s*(?:Name\s*&?\s*Address|Address)?|'
+        r'Mfg\.?\s*(?:&|and)\s*Pkd\.?\s*by|Mfg\.?\s*by|Mfd\.?\s*by|Packed\s*by|Pkd\.?\s*by|Marketed\s*by|Mktd\.?\s*by|Imported\s*by)\s*'
+        r'[:.\-_=~;]?\s*([^\n\r]+(?:\n[^\n\r]+){0,3})',
         full_text,
         re.IGNORECASE
     )
 
     if mfg_match:
-        mfg_str = mfg_match.group(1).strip()
-        result["value"] = mfg_str
-        result["raw_text"] = mfg_match.group(0).strip()
+        raw_mfg_str = mfg_match.group(1).strip()
+        # Clean leading stray artifacts like "by.", "by:", "'", or "Address:"
+        cleaned_mfg = re.sub(r'^(?:by[.:\s]+|[\'"]+|Address[:.\s]+)+', '', raw_mfg_str, flags=re.IGNORECASE).strip()
         
-        has_pin = bool(re.search(r'\b\d{6}\b', mfg_str) or re.search(r'pin(?:code)?', mfg_str, re.IGNORECASE))
-        result["has_pincode"] = has_pin
-        
-        conf = 0.65 + (0.25 if has_pin else 0.0) + (0.1 if len(mfg_str) > 25 else 0.0)
-        result["confidence"] = min(conf, 0.95)
-        result["status"] = "PASS" if has_pin else "REVIEW"
+        # Truncate if it runs into another statutory declaration keyword
+        stop_keywords = r'\b(?:Net\s*Weight|Net\s*Qty|Net\s*Contents|Country\s*of\s*Origin|MRP|Best\s*Before|Date\s*of|Batch)\b'
+        cleaned_mfg = re.split(stop_keywords, cleaned_mfg, flags=re.IGNORECASE)[0].strip()
+
+        if len(cleaned_mfg) >= 6:
+            result["value"] = cleaned_mfg
+            result["raw_text"] = mfg_match.group(0).strip()
+
+            # PIN code detection: 6 digits (contiguous or with single space 123 456)
+            has_pin = bool(
+                re.search(r'\b\d{6}\b', cleaned_mfg) or
+                re.search(r'\b\d{3}\s\d{3}\b', cleaned_mfg) or
+                re.search(r'pin(?:code)?', cleaned_mfg, re.IGNORECASE)
+            )
+            result["has_pincode"] = has_pin
+
+            conf = 0.70 + (0.25 if has_pin else 0.0) + (0.05 if len(cleaned_mfg) > 25 else 0.0)
+            result["confidence"] = min(conf, 0.95)
+            result["status"] = "PASS" if has_pin else "REVIEW"
 
     if tokens and result["raw_text"]:
         for tok in tokens:
             t_lower = tok["text"].lower()
-            if "manufactured" in t_lower or "manufacturer" in t_lower or "mfg" in t_lower or "packed" in t_lower:
+            if "manufactured" in t_lower or "manufacturer" in t_lower or "mfg" in t_lower or "packed" in t_lower or "marketed" in t_lower:
                 result["bbox"] = tok["bbox"]
                 break
 
@@ -463,6 +549,7 @@ def extract_manufacturer(full_text, tokens=None):
 def extract_product_name(full_text, lines=None, tokens=None):
     """
     Extracts generic or brand name of commodity under Rule 6(1)(b).
+    Prioritizes explicit statutory declarations ('Generic Name:', 'Common Name:', 'Commodity:').
     """
     result = {
         "value": None,
@@ -471,19 +558,44 @@ def extract_product_name(full_text, lines=None, tokens=None):
         "status": "NOT_DETECTED"
     }
 
-    if lines and len(lines) > 0:
-        for l in lines[:3]:
-            cleaned = l.strip()
-            if len(cleaned) >= 4 and not re.match(r'^\d+$', cleaned) and not any(k in cleaned.lower() for k in ["mfg", "mrp", "exp", "net wt"]):
-                result["value"] = cleaned
-                result["confidence"] = 0.85
-                result["status"] = "PASS"
-                break
+    if not full_text and not lines:
+        return result
 
-    if not result["value"]:
+    # 1. Prioritize statutory 'Generic Name:' or 'Commodity:' line
+    gen_match = re.search(
+        r'(?:Generic\s*Name|Common\s*Name|Name\s*of\s*(?:the\s*)?Commodity|Commodity|Product\s*Name)\s*[:.\-_=~;]?\s*([^\n\r]+)',
+        full_text,
+        re.IGNORECASE
+    )
+    if gen_match:
+        val = gen_match.group(1).strip()
+        # Clean trailing separators
+        val = re.sub(r'[:.\-_=~;]+$', '', val).strip()
+        if len(val) >= 3 and not re.match(r'^\d+$', val):
+            result["value"] = val
+            result["confidence"] = 0.95
+            result["status"] = "PASS"
+
+    # 2. Fall back to top clean lines (brand/product title)
+    if not result["value"] and lines and len(lines) > 0:
+        for l in lines[:4]:
+            cleaned = l.strip()
+            # Clean leading/trailing punctuation
+            cleaned = re.sub(r'^[^\w\s]+|[^\w\s]+$', '', cleaned).strip()
+            # Ensure line has reasonable alphabetic content and not pure noise
+            alpha_count = sum(1 for c in cleaned if c.isalpha())
+            if len(cleaned) >= 4 and alpha_count >= 3 and not re.match(r'^\d+$', cleaned):
+                if not any(k in cleaned.lower() for k in ["mfg", "mrp", "exp", "net wt", "batch", "date of"]):
+                    result["value"] = cleaned
+                    result["confidence"] = 0.85
+                    result["status"] = "PASS"
+                    break
+
+    if not result["value"] and full_text:
         first_line = full_text.splitlines()[0] if full_text else ""
-        if len(first_line.strip()) >= 3:
-            result["value"] = first_line.strip()
+        cleaned = re.sub(r'^[^\w\s]+|[^\w\s]+$', '', first_line).strip()
+        if len(cleaned) >= 3 and sum(1 for c in cleaned if c.isalpha()) >= 3:
+            result["value"] = cleaned
             result["confidence"] = 0.70
             result["status"] = "PASS"
 
@@ -514,13 +626,16 @@ def extract_unit_sale_price(full_text, tokens=None):
 
     usp_regex = re.compile(
         r'(?:Unit\s*Sale\s*Price|Unit\s*Selling\s*Price|Sale\s*Price\s*per|Price\s*per\s*(?:Unit|kg|litre|liter|g|gm|ml)|USP)\s*[:.\-_=~;]?\s*'
-        r'([₹RsINR\.\s]*\s*\d+(?:\.\d{1,2})?\s*/\s*(?:g|gm|kg|ml|l|ltr|litre|piece|item|N|units?))\b',
+        r'([₹RsINR\.\s]*\s*\d+(?:\.\d{1,2})?\s*/?\s*(?:per\s*)?(?:g|gm|kg|ml|l|ltr|litre|piece|item|N|units?|9))\b',
         re.IGNORECASE
     )
 
     match = usp_regex.search(full_text)
     if match:
-        result["value"] = match.group(1).strip()
+        val = match.group(1).strip()
+        # Clean OCR unit substitution like '/ 9' -> '/ g'
+        val = re.sub(r'/\s*9\b', '/ g', val)
+        result["value"] = val
         result["raw_text"] = match.group(0).strip()
         result["confidence"] = 0.90
         result["status"] = "PASS"
@@ -552,13 +667,16 @@ def extract_dimensions(full_text, tokens=None):
 
     dim_regex = re.compile(
         r'(?:Dimensions?|Size|LxWxH)\s*[:.\-_=~;]?\s*'
-        r'(\d+(?:\.\d+)?\s*(?:cm|mm|m|inch|in)?\s*[xX*]\s*\d+(?:\.\d+)?\s*(?:cm|mm|m|inch|in)?(?:\s*[xX*]\s*\d+(?:\.\d+)?\s*(?:cm|mm|m|inch|in))?)',
+        r'(\d+(?:\.\d+)?\s*(?:cm|mm|m|inch|in|em)?\s*[xX*]\s*\d+(?:\.\d+)?\s*(?:cm|mm|m|inch|in|em)?(?:\s*[xX*]\s*\d+(?:\.\d+)?\s*(?:cm|mm|m|inch|in|em)?)?)',
         re.IGNORECASE
     )
 
     match = dim_regex.search(full_text)
     if match:
-        result["value"] = match.group(1).strip()
+        val = match.group(1).strip()
+        # Clean OCR artifact "em" -> "cm"
+        val = re.sub(r'\bem\b', 'cm', val)
+        result["value"] = val
         result["raw_text"] = match.group(0).strip()
         result["confidence"] = 0.88
         result["status"] = "PASS"

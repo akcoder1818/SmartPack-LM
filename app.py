@@ -176,6 +176,23 @@ def analyze():
     # Step 3: Legal Metrology Rule Compliance Assessment
     compliance_assessment = assess_compliance(extracted_fields)
 
+    # Server-Side Pipeline Trace Logging
+    print("\n[SmartPack-LM Pipeline] =================================================")
+    print(f"[SmartPack-LM Pipeline] 1. OCR RAW TEXT ({len(ocr_res.get('lines', []))} lines, Engine: {ocr_res.get('engine')}):")
+    for l in ocr_res.get("lines", [])[:10]:
+        print(f"  | {l}")
+    if len(ocr_res.get("lines", [])) > 10:
+        print(f"  | ... ({len(ocr_res.get('lines', [])) - 10} more lines)")
+    print("[SmartPack-LM Pipeline] 2. EXTRACTED & NORMALIZED FIELDS:")
+    for fn, fv in extracted_fields.items():
+        if isinstance(fv, dict):
+            print(f"  - {fn}: val={fv.get('value')!r} | conf={fv.get('confidence')} | status={fv.get('status')}")
+    print(f"[SmartPack-LM Pipeline] 3. LEGAL METROLOGY RULE EVALUATION:")
+    print(f"  Overall Status: {compliance_assessment.get('overall_status')} | Score: {compliance_assessment.get('compliance_score')}%")
+    for re_item in compliance_assessment.get("rule_evaluations", []):
+        print(f"  [{re_item.get('status')}] {re_item.get('field')} ({re_item.get('severity')}): {re_item.get('findings')}")
+    print("[SmartPack-LM Pipeline] =================================================\n")
+
     # Step 4: Generate Visual Evidence Annotated Map
     evidence_fname = f"evidence_{timestamp_str}.jpg"
     evidence_path = os.path.join(app.config['UPLOAD_FOLDER'], evidence_fname)
